@@ -1,0 +1,46 @@
+
+https://stackoverflow.com/questions/60492369/gravity-compensation-in-imu-data
+
+The quaternion computed by the IMU (6 DOF device) is basically the device attitude (3D-orientation) with respect to the local Earth reference frame; so it can be used to rotate the acceleration measurement from the local body reference frame (the values directly measured by the IMU) to the local Earth reference frame (the coordinate system with x-y plane tangential to the ground). You can use quaternion multiplication to do this
+
+v' = q . v . q *
+v' = (w,x,y,z) * (0,ax,ay,az) * (w,-x,-y,-z)
+
+where q is the quaternion and v is the acceleration vector (please look up quaternion-vector multiplication for further details*). Since we know that gravity is the vector u = (0,0,g) in the local Earth reference frame (where g ≈ 9.81 m/s^2, assuming that the IMU measurements are also in m/s^2), we can then subtract this vector from v'
+
+v'' = v' - u
+
+v'' is the gravity compensated/removed vector. However, it is not in the IMU's local body reference frame (remember we rotated it to the local Earth reference frame). So to convert it back, you can multiply it by the inverse quaternion
+
+v''' = q-1 . v'' . q-1 *
+
+v''' will be the original acceleration measurement minus gravity. To confirm that the result is correct, you can take measurements while the device is stationary. No matter how the device is rotated, the acceleration measurements should be close to (0,0,0).
+
+If the IMU did not provide a quaternion measurement, it could have been computed via the fusion of accelerometer and gyroscope readings (which is what the IMU is doing anyway). If you are interested in this, I suggest looking up Madgwick, Mahony or Extended Kalman Filter algorithms for attitude estimation.
+
+*Helpful resources
+
+Quaternion multiplication: https://www.euclideanspace.com/maths/algebra/realNormedAlgebra/quaternions/arithmetic/index.htm
+
+Rotating a vector with a quaternion (especially the third answer if you'd like to see some code): https://math.stackexchange.com/questions/40164/how-do-you-rotate-a-vector-by-a-unit-quaternion
+https://gamedev.stackexchange.com/questions/28395/rotating-vector3-by-a-quaternion
+
+
+Thanks a lot for the answer. Could you show me how to do v' = q . v . q * if I have the quaternion (w,x,y,z) and acceleration vectors (ax,ay,az)? – 
+
+First you have to add 0 as the real part of the vector: (0,ax,ay,az); and the conjugate of a quaternion is: (w,-x,-y,-z). So the formula explicitly becomes: v' = (w,x,y,z) * (0,ax,ay,az) * (w,-x,-y,-z); where * is the quaternion multiplication operator. I added some helpful resources to the answer as well. – 
+cantunca
+ Mar 15, 2020 at 10:13
+I have a doubt, is the earth frame of reference always same? are there different conventions for earth frame reference? – 
+user12800116
+ Apr 29, 2020 at 15:33 
+In the third equation (v'''), I think you should use v'' instead of v – 
+D. LaRocque
+ Feb 12 at 15:55
+ 
+Произведение кватернионов 
+qa * qb
+q[0] = qa[0]*qb[0] - qa[1]*qb[1] - qa[2]*qb[2] - qa[3]*qb[3]
+q[1] = qa[0]*qb[1] + qb[0]*qa[1] + qa[2]*qb[3] - qb[2]*qa[3]
+q[2] = qa[0]*qb[2] + qb[0]*qa[2] + qa[3]*qb[1] - qb[3]*qa[1]
+q[3] = qa[0]*qb[3] + qb[0]*qa[3] + qa[1]*qb[2] - qb[1]*qa[2]
