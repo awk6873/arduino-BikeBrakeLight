@@ -64,6 +64,8 @@ void loop()
       imu.computeEulerAngles();
       printIMUData();
     }
+    else 
+      SerialPort.println("UpdateFifo failed");
   }
 }
 
@@ -86,4 +88,3 @@ void printIMUData(void)
   SerialPort.println("Time: " + String(imu.time) + " ms");
   SerialPort.println();
 }
-

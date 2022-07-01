@@ -1,10 +1,8 @@
 #include <SparkFunMPU9250-DMP.h>
 #include "ArduinoLowPower.h"
 
-#define INTERRUPT_PIN 1
+#define INTERRUPT_PIN 2
 
-#define AX ax
-#define A
 
 // порог значений на осях акселя для определения неактивности, G
 #define INACTIVITY_ACCEL_THRESHOLD 0.1
@@ -32,8 +30,6 @@ void setup()
 
   // pin для прерываний от MPU
   pinMode(INTERRUPT_PIN, INPUT_PULLUP);
-  // подвешиваем обработчик по спадающему фронту
-  LowPower.attachInterruptWakeup(INTERRUPT_PIN, dummy, LOW);
 
   // Call imu.begin() to verify communication and initialize
   if (imu.begin() != INV_SUCCESS)
@@ -47,10 +43,16 @@ void setup()
     }
   }
 
-  // Use enableInterrupt() to configure the MPU-9250's 
-  // interrupt output as a "data ready" indicator.
-  imu.enableInterrupt();
+  imu.dmpBegin(DMP_FEATURE_6X_LP_QUAT | // Enable 6-axis quat
+               DMP_FEATURE_GYRO_CAL| // Use gyro calibration
+               DMP_FEATURE_SEND_RAW_ACCEL,
+              1); // Set DMP FIFO rate to 10 Hz
+  // DMP_FEATURE_LP_QUAT can also be used. It uses the 
+  // accelerometer in low-power mode to estimate quat's.
+  // DMP_FEATURE_LP_QUAT and 6X_LP_QUAT are mutually exclusive
 
+  noInterrupts();
+  
   // The interrupt level can either be active-high or low.
   // Configure as active-low, since we'll be using the pin's
   // internal pull-up resistor.
@@ -64,32 +66,42 @@ void setup()
   // Options are INT_LATCHED or INT_50US_PULSE
   //imu.setIntLatched(INT_LATCHED);
   imu.setIntLatched(INT_50US_PULSE);
+  
+  // Use enableInterrupt() to configure the MPU-9250's 
+  // interrupt output as a "data ready" indicator.
+  imu.enableInterrupt();
 
-  imu.dmpBegin(DMP_FEATURE_6X_LP_QUAT | // Enable 6-axis quat
-               DMP_FEATURE_GYRO_CAL| // Use gyro calibration
-               DMP_FEATURE_SEND_RAW_ACCEL,
-              1); // Set DMP FIFO rate to 10 Hz
-  // DMP_FEATURE_LP_QUAT can also be used. It uses the 
-  // accelerometer in low-power mode to estimate quat's.
-  // DMP_FEATURE_LP_QUAT and 6X_LP_QUAT are mutually exclusive
+  // подвешиваем обработчик по спадающему фронту
+  LowPower.attachInterruptWakeup(INTERRUPT_PIN, dummy, LOW);
 
+  interrupts();
 }
 
 void loop() 
 {
-  Serial.println("In loop");
-  Serial.println(millis());
   // сигнализируем 
   digitalWrite(LED_BUILTIN, LOW);   // turn the LED on (LOW is the voltage level)
-  delay(500);                       // wait for a second
+  delay(200);                       // wait for a second
   digitalWrite(LED_BUILTIN, HIGH);    // turn the LED off by making the voltage HIGH
-  delay(500);
+  delay(1000);
 
   // Check for new data in the FIFO
   if ( imu.fifoAvailable() )
   {
+      // сигнализируем 
+  digitalWrite(LED_BUILTIN, LOW);   // turn the LED on (LOW is the voltage level)
+  delay(200);                       // wait for a second
+  digitalWrite(LED_BUILTIN, HIGH);    // turn the LED off by making the voltage HIGH
+  delay(1000);
+  
     // Use dmpUpdateFifo to update the ax, gx, mx, etc. values
     if ( imu.dmpUpdateFifo() != INV_SUCCESS) {
+
+        // сигнализируем 
+  digitalWrite(LED_BUILTIN, LOW);   // turn the LED on (LOW is the voltage level)
+  delay(200);                       // wait for a second
+  digitalWrite(LED_BUILTIN, HIGH);    // turn the LED off by making the voltage HIGH
+  delay(1000);
       Serial.println("MPU update FIFO failed");
     }
   }
@@ -126,11 +138,24 @@ void loop()
       digitalWrite(LED_BUILTIN, LOW);   // turn the LED on (LOW is the voltage level)
       delay(3000);                       // wait for a second
       digitalWrite(LED_BUILTIN, HIGH);    // turn the LED off by making the voltage HIGH
-
-      Serial.println("Going to sleep");
   
       // переводим CPU в режим сна
       LowPower.sleep();
+
+      delay(100);
+      
+      // перезапуск DMP 
+      if (imu.dmpBegin(DMP_FEATURE_6X_LP_QUAT | // Enable 6-axis quat
+               DMP_FEATURE_GYRO_CAL| // Use gyro calibration
+               DMP_FEATURE_SEND_RAW_ACCEL,
+              1) != INV_SUCCESS) { // Set DMP FIFO rate to 10 Hz
+      // DMP_FEATURE_LP_QUAT can also be used. It uses the 
+      // accelerometer in low-power mode to estimate quat's.
+      // DMP_FEATURE_LP_QUAT and 6X_LP_QUAT are mutually exclusive
+      digitalWrite(LED_BUILTIN, LOW);   // turn the LED on (LOW is the voltage level)
+      delay(5000);                       // wait for a second
+      digitalWrite(LED_BUILTIN, HIGH);    // turn the LED off by making the voltage HIGH
+              }
     }
   }
 }
