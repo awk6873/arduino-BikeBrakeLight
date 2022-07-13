@@ -15,7 +15,7 @@ uint32_t accel_last_activity_ts;
 // продолжительность применения ускорений, мс
 #define ACCEL_WAKE_ON_DURATION 1 
 // частота выборки для акселя в режиме Low Power
-#define ACCEL_WAKE_ON_FREQ 2    // 2 соответствует 2.5 Гц
+#define ACCEL_WAKE_ON_FREQ 5    // 2 - 1.95 Гц, 4 - 3.91 Гц ?
 
 // текущие значения для акселя, приведенные к G
 float ax = 0, ay = 0, az = 0;
@@ -79,30 +79,19 @@ void setup()
 
 void loop() 
 {
-  // сигнализируем 
-  digitalWrite(LED_BUILTIN, LOW);   // turn the LED on (LOW is the voltage level)
-  delay(200);                       // wait for a second
-  digitalWrite(LED_BUILTIN, HIGH);    // turn the LED off by making the voltage HIGH
-  delay(1000);
 
   // Check for new data in the FIFO
   if ( imu.fifoAvailable() )
-  {
-      // сигнализируем 
-  digitalWrite(LED_BUILTIN, LOW);   // turn the LED on (LOW is the voltage level)
-  delay(200);                       // wait for a second
-  digitalWrite(LED_BUILTIN, HIGH);    // turn the LED off by making the voltage HIGH
-  delay(1000);
-  
+  {  
     // Use dmpUpdateFifo to update the ax, gx, mx, etc. values
     if ( imu.dmpUpdateFifo() != INV_SUCCESS) {
 
         // сигнализируем 
-  digitalWrite(LED_BUILTIN, LOW);   // turn the LED on (LOW is the voltage level)
-  delay(200);                       // wait for a second
-  digitalWrite(LED_BUILTIN, HIGH);    // turn the LED off by making the voltage HIGH
-  delay(1000);
-      Serial.println("MPU update FIFO failed");
+        digitalWrite(LED_BUILTIN, LOW);   // turn the LED on (LOW is the voltage level)
+        delay(2000);                       // wait for a second
+        digitalWrite(LED_BUILTIN, HIGH);    // turn the LED off by making the voltage HIGH
+        delay(1000);
+        Serial.println("MPU update FIFO failed");
     }
   }
 
@@ -112,11 +101,13 @@ void loop()
   az = imu.calcAccel(imu.az);
 
   Serial.print(ax);
+  Serial.print("\t");
   Serial.print(ay);
+  Serial.print("\t");
   Serial.println(az);
 
   // проверяем, есть ли активность на акселе
-  if (ax >= INACTIVITY_ACCEL_THRESHOLD || ay >= INACTIVITY_ACCEL_THRESHOLD /* || az >= INACTIVITY_ACCEL_THRESHOLD*/) {
+  if (abs(ax) >= INACTIVITY_ACCEL_THRESHOLD || abs(ay) >= INACTIVITY_ACCEL_THRESHOLD /* || az >= INACTIVITY_ACCEL_THRESHOLD*/) {
     // активность есть, запоминаем отметку времени
     accel_last_activity_ts = millis();
   }
@@ -130,32 +121,63 @@ void loop()
       // порога ускорения для просыпания, 
       // продолжительности применения ускорения в мс,
       // частоты выборок 
-      if (mpu_lp_motion_interrupt(ACCEL_WAKE_ON_THRESHOLD, ACCEL_WAKE_ON_DURATION, ACCEL_WAKE_ON_FREQ) != INV_SUCCESS) 
+//      if (mpu_lp_motion_interrupt(ACCEL_WAKE_ON_THRESHOLD, ACCEL_WAKE_ON_DURATION, ACCEL_WAKE_ON_FREQ) != INV_SUCCESS) 
         // ошибка
-        Serial.println(F("IMU set up failed. Please check installed IMU IC."));
+//        Serial.println(F("IMU set up failed. Please check installed IMU IC."));
 
       // сигнализируем о переходе в режим сна
+      Serial.println("Going to sleep mode");
       digitalWrite(LED_BUILTIN, LOW);   // turn the LED on (LOW is the voltage level)
       delay(3000);                       // wait for a second
       digitalWrite(LED_BUILTIN, HIGH);    // turn the LED off by making the voltage HIGH
   
       // переводим CPU в режим сна
-      LowPower.sleep();
+      //LowPower.sleep();
 
       delay(100);
+
+      // сигнализируем о выходе из режима сна
+      digitalWrite(LED_BUILTIN, LOW);   // turn the LED on (LOW is the voltage level)
+      delay(500);                       // wait for a second
+      digitalWrite(LED_BUILTIN, HIGH);    // turn the LED off by making the voltage HIGH
+
+      // очищаем очередь FIFO
+      imu.resetFifo();
+
+      /* mpu_init(0);
+
+      // сигнализируем о выходе из режима сна
+      digitalWrite(LED_BUILTIN, LOW);   // turn the LED on (LOW is the voltage level)
+      delay(500);                       // wait for a second
+      digitalWrite(LED_BUILTIN, HIGH);    // turn the LED off by making the voltage HIGH
       
+      // перезапуск MPU 
+      if (imu.begin() != INV_SUCCESS) { 
+        digitalWrite(LED_BUILTIN, LOW);   // turn the LED on (LOW is the voltage level)
+        delay(5000);                       // wait for a second
+        digitalWrite(LED_BUILTIN, HIGH);    // turn the LED off by making the voltage HIGH
+      }
+
+      // сигнализируем о выходе из режима сна
+      digitalWrite(LED_BUILTIN, LOW);   // turn the LED on (LOW is the voltage level)
+      delay(1000);                       // wait for a second
+      digitalWrite(LED_BUILTIN, HIGH);    // turn the LED off by making the voltage HIGH
+
+*/
       // перезапуск DMP 
       if (imu.dmpBegin(DMP_FEATURE_6X_LP_QUAT | // Enable 6-axis quat
                DMP_FEATURE_GYRO_CAL| // Use gyro calibration
                DMP_FEATURE_SEND_RAW_ACCEL,
               1) != INV_SUCCESS) { // Set DMP FIFO rate to 10 Hz
-      // DMP_FEATURE_LP_QUAT can also be used. It uses the 
-      // accelerometer in low-power mode to estimate quat's.
-      // DMP_FEATURE_LP_QUAT and 6X_LP_QUAT are mutually exclusive
-      digitalWrite(LED_BUILTIN, LOW);   // turn the LED on (LOW is the voltage level)
-      delay(5000);                       // wait for a second
-      digitalWrite(LED_BUILTIN, HIGH);    // turn the LED off by making the voltage HIGH
-              }
+        // DMP_FEATURE_LP_QUAT can also be used. It uses the 
+        // accelerometer in low-power mode to estimate quat's.
+        // DMP_FEATURE_LP_QUAT and 6X_LP_QUAT are mutually exclusive
+        digitalWrite(LED_BUILTIN, LOW);   // turn the LED on (LOW is the voltage level)
+        delay(5000);                       // wait for a second
+        digitalWrite(LED_BUILTIN, HIGH);    // turn the LED off by making the voltage HIGH
+      }
+      // очищаем очередь FIFO
+      imu.resetFifo();
     }
   }
 }
