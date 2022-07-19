@@ -20,7 +20,7 @@ Supported Platforms:
 #include <SparkFunMPU9250-DMP.h>
 #include "ArduinoLowPower.h"
 
-#define INTERRUPT_PIN 7
+#define INTERRUPT_PIN 1
 
 MPU9250_DMP imu;
 
@@ -48,7 +48,8 @@ void setup()
 
   
   imu.dmpBegin(DMP_FEATURE_6X_LP_QUAT | // Enable 6-axis quat
-               DMP_FEATURE_GYRO_CAL| // Use gyro calibration
+               DMP_FEATURE_GYRO_CAL | // Use gyro calibration
+               DMP_FEATURE_SEND_CAL_GYRO | // Send cal'd gyro values
                DMP_FEATURE_SEND_RAW_ACCEL,
               1); // Set DMP FIFO rate to 10 Hz
   // DMP_FEATURE_LP_QUAT can also be used. It uses the 
@@ -117,10 +118,10 @@ void loop()
     multiply_quaternion(q1, v2, v3_);
     multiply_quaternion(v3_, q, v3);
 
-    // v' = q . v . q *
-    // v' = (w,x,y,z) * (0,ax,ay,az) * (w,-x,-y,-z); 
+    // v' = q . v . q*
+    // v' = (w,x,y,z) * (0,ax,ay,az) * (w,-x,-y,-z);  q* - сопряженный кватернион (w,-x,-y,-z)
     // v'' = v' - u,    u = (0,0,g)
-    // v''' = q-1 . v'' . q-1 *,     q-1 - обратный кватернион, для нормированного равен сопряженному кватерниону
+    // v''' = q-1 . v'' . q-1*,     q-1 - обратный кватернион, для нормированного равен сопряженному кватерниону
 
 
 /*

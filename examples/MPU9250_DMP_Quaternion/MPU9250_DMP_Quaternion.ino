@@ -45,6 +45,7 @@ void setup()
   
   imu.dmpBegin(DMP_FEATURE_6X_LP_QUAT | // Enable 6-axis quat
                DMP_FEATURE_GYRO_CAL, // Use gyro calibration
+               DMP_FEATURE_SEND_CAL_GYRO | // Send cal'd gyro values
               10); // Set DMP FIFO rate to 10 Hz
   // DMP_FEATURE_LP_QUAT can also be used. It uses the 
   // accelerometer in low-power mode to estimate quat's.
@@ -83,8 +84,8 @@ void printIMUData(void)
   SerialPort.println("Q: " + String(q0, 4) + ", " +
                     String(q1, 4) + ", " + String(q2, 4) + 
                     ", " + String(q3, 4));
-  SerialPort.println("R/P/Y: " + String(imu.roll) + ", "
-            + String(imu.pitch) + ", " + String(imu.yaw));
-  SerialPort.println("Time: " + String(imu.time) + " ms");
-  SerialPort.println();
+  //SerialPort.println("R/P/Y: " + String(imu.roll) + ", "
+  //          + String(imu.pitch) + ", " + String(imu.yaw));
+  //SerialPort.println("Time: " + String(imu.time) + " ms");
+  //SerialPort.println();
 }

@@ -74,7 +74,7 @@
 
 // ----- configure 16x2 LCD display
 /* Comment-out the following line if you are not using a 16x2 LCD */
-#define LCD2
+//#define LCD2
 #ifdef LCD2
 #include <LiquidCrystal_I2C.h>                                      // YwRobot Arduino LCM1602 IIC V1 library  
 LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);      // LCD pinouts: addr,en,rw,rs,d4,d5,d6,d7,bl,blpol
@@ -96,7 +96,7 @@ byte myLed = 13;                                                    // Set up pi
   #define TASK 6    // View ... pitch, roll, and compass-heading on 16x2 LCD display
 */
 
-#define TASK 6
+#define TASK 4
 
 // ----- user offsets and scale-factors
 /*
