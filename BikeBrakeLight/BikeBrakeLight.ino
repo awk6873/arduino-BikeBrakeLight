@@ -39,6 +39,8 @@ uint32_t accel_last_activity_ts;
 float ax = 0, ay = 0, az = 0;
 float gx = 0, gy = 0, gz = 0;
 float mx = 0, my = 0, mz = 0;
+// значения от акселя после компенсации гравитации
+float ax_c = 0, ay_c = 0, az_c = 0;
 
 unsigned long delt_t = 0;                           // used to control display output rate
 unsigned long count = 0, sumCount = 0;              // used to control display output rate
@@ -173,20 +175,38 @@ void loop()
   sum += deltat; // sum for averaging filter update rate
   sumCount++;
 
+  // вычисляем кватернион положения относительно Земли
   MahonyQuaternionUpdate(
   ax,                ay,                  az,
   gx * DEG_TO_RAD,   gy * DEG_TO_RAD,     gz * DEG_TO_RAD,
   my,                mx,                 -mz,
   deltat);
-  
   q = (float *)getQ();
+  Quaternion q1(q[0], q[1], q[2], q[3]);
+  Quaternion q1_(q[0], -q[1], -q[2], -q[3]);
 
+  VectorFloat v_accel(ax, ay, az);    // вектор для акселя
+  v_accel = v_accel.getRotated(&q1);   // поворачиваем его в систему координат Земли
+  v_accel.z -= 1;                     // компенсируем гравитацию
+  v_accel = v_accel.getRotated(&q1_);  // поворачиваем обратно
+
+  ax_c = v_accel.x;
+  ay_c = v_accel.y;
+  az_c = v_accel.z;
+/*
   Serial.print(ax);
   Serial.print("\t");
   Serial.print(ay);
   Serial.print("\t");
   Serial.print(az);
   Serial.print("\t");
+*/
+  Serial.print(ax_c);
+  Serial.print("\t");
+  Serial.print(ay_c);
+  Serial.print("\t");
+  Serial.println(az_c);
+  
 /*
   Serial.print(gx);
   Serial.print("\t");
@@ -200,7 +220,7 @@ void loop()
   Serial.print(my);
   Serial.print("\t");
   Serial.println(mz);
-*/
+
   Serial.print(q[0], 4);
   Serial.print("\t");
   Serial.print(q[1], 4);
@@ -208,7 +228,7 @@ void loop()
   Serial.print(q[2], 4);
   Serial.print("\t");
   Serial.println(q[3], 4);
-
+*/
   #ifdef LCD
   display.clearDisplay();
   display.setCursor(0, 0);
