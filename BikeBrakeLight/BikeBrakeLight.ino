@@ -9,15 +9,15 @@
 
 #define INTERRUPT_PIN 1
 
-#define LCD 1 // использовать i2c OLED для вывода сообщений
-#ifdef LCD
+#define OLED 1 // использовать i2c OLED дисплей для вывода сообщений
+#ifdef OLED
   #include <Adafruit_GFX.h>
   #include <Adafruit_SH110X.h>
   #define OLED_ADDRESS 0x3c  // i2с адрес
-  #define SCREEN_WIDTH 128   // разрешение экрана
-  #define SCREEN_HEIGHT 64   
+  #define OLED_WIDTH 128   // разрешение экрана
+  #define OLED_HEIGHT 64   
   #define OLED_RESET -1      //   QT-PY / XIAO
-  Adafruit_SH1106G display = Adafruit_SH1106G(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+  Adafruit_SH1106G display = Adafruit_SH1106G(OLED_WIDTH, OLED_HEIGHT, &Wire, OLED_RESET);
 #endif
 
 #define DEBUG 1  // использовать Serial для вывода сообщений
@@ -42,12 +42,11 @@ float mx = 0, my = 0, mz = 0;
 // значения от акселя после компенсации гравитации
 float ax_c = 0, ay_c = 0, az_c = 0;
 
-unsigned long delt_t = 0;                           // used to control display output rate
-unsigned long count = 0, sumCount = 0;              // used to control display output rate
-float pitch, roll, yaw;
+//uint32_t delt_t = 0;                           // used to control display output rate
+uint32_t count = 0, sumCount = 0;              // used to control display output rate
 float deltat = 0.0f, sum = 0.0f;                    // integration interval for both filter schemes
-unsigned long lastUpdate = 0, firstUpdate = 0;      // used to calculate integration interval
-unsigned long Now = 0; // used to calculate integration interval
+uint32_t lastUpdate = 0;      // used to calculate integration interval
+uint32_t Now = 0; // used to calculate integration interval
 
 float *q;
 
@@ -56,20 +55,22 @@ MPU9250_DMP imu;
 void setup() 
 {
   Serial.begin(115200);
-  delay(5000);
   Serial.println("Starting");
 
   // pin для прерываний от MPU
   pinMode(INTERRUPT_PIN, INPUT_PULLUP);
 
-  #ifdef LCD
+  #ifdef OLED
   delay(250); 
   display.begin(OLED_ADDRESS, true); // OLED дисплей
   display.setTextSize(1);
   display.setTextColor(SH110X_WHITE);
   display.clearDisplay();
+  display.println("Starting");
   display.display();
   #endif
+
+  delay(1000);
 
   // Call imu.begin() to verify communication and initialize
   if (imu.begin() != INV_SUCCESS)
@@ -77,10 +78,9 @@ void setup()
     while (1)
     {
       Serial.println("Unable to communicate with MPU-9250");
-      Serial.println("Check connections, and try again.");
       Serial.println();
 
-      #ifdef LCD
+      #ifdef OLED
       display.setCursor(0, 0);
       display.println("Unable to communicate with MPU-9250");
       display.display();
@@ -137,7 +137,7 @@ void loop()
 
   // Check for new data in the FIFO
   if ( imu.dataReady() ) { 
-    delay(10); // если не ждать 10 мс, .update(...) выдает ошибку от мага
+
     // Call update() to update the imu objects sensor data.
     // You can specify which sensors to update by combining
     // UPDATE_ACCEL, UPDATE_GYRO, UPDATE_COMPASS, and/or
@@ -146,11 +146,14 @@ void loop()
     //  so you don't have to specify these values.)
     if (imu.update(UPDATE_ACCEL | UPDATE_GYRO | UPDATE_COMPASS) != INV_SUCCESS) {
         // сигнализируем 
-        digitalWrite(LED_BUILTIN, LOW);   // turn the LED on (LOW is the voltage level)
-        delay(2000);                       // wait for a second
-        digitalWrite(LED_BUILTIN, HIGH);    // turn the LED off by making the voltage HIGH
-        delay(1000);
         Serial.println("MPU update sensors failed");
+        #ifdef OLED
+        display.clearDisplay();
+        display.setCursor(0, 0);
+        display.println("Error reinit IMU");
+        display.display();
+        #endif
+        blinkLED(3, 500, 500);
     }
   }
 
@@ -182,64 +185,36 @@ void loop()
   my,                mx,                 -mz,
   deltat);
   q = (float *)getQ();
-  Quaternion q1(q[0], q[1], q[2], q[3]);
-  Quaternion q1_(q[0], -q[1], -q[2], -q[3]);
+  Quaternion q1(q[0], q[1], q[2], q[3]);       // кватернион
+  Quaternion q1_(q[0], -q[1], -q[2], -q[3]);   // обратный кватернион
 
-  VectorFloat v_accel(ax, ay, az);    // вектор для акселя
+  // компенсируем гравитацию для акселя
+  VectorFloat v_accel(ax, ay, az);     // вектор для акселя
   v_accel = v_accel.getRotated(&q1);   // поворачиваем его в систему координат Земли
-  v_accel.z -= 1;                     // компенсируем гравитацию
-  v_accel = v_accel.getRotated(&q1_);  // поворачиваем обратно
+  v_accel.z -= 1;                      // вычитаем гравитацию из значения на оси Z
+  v_accel = v_accel.getRotated(&q1_);  // поворачиваем обратно в систему координат вело
 
+  // значения для акселя без влияния гравитации
   ax_c = v_accel.x;
   ay_c = v_accel.y;
   az_c = v_accel.z;
-/*
-  Serial.print(ax);
-  Serial.print("\t");
-  Serial.print(ay);
-  Serial.print("\t");
-  Serial.print(az);
-  Serial.print("\t");
-*/
-  Serial.print(ax_c);
-  Serial.print("\t");
-  Serial.print(ay_c);
-  Serial.print("\t");
-  Serial.println(az_c);
-  
-/*
-  Serial.print(gx);
-  Serial.print("\t");
-  Serial.print(gy);
-  Serial.print("\t");
-  Serial.print(gz);
-  Serial.print("\t");
-  
-  Serial.print(mx);
-  Serial.print("\t");
-  Serial.print(my);
-  Serial.print("\t");
-  Serial.println(mz);
 
-  Serial.print(q[0], 4);
-  Serial.print("\t");
-  Serial.print(q[1], 4);
-  Serial.print("\t");
-  Serial.print(q[2], 4);
-  Serial.print("\t");
-  Serial.println(q[3], 4);
-*/
-  #ifdef LCD
+  //Serial.print((String)ax + "\t" + ay + "\t" + az);
+  //Serial.print("\t");
+  // Serial.println((String)gx + "\t" + gy + "\t" + gz);
+  // Serial.println((String)mx + "\t" + my + "\t" + mz);
+  // Serial.println((String)q[0] + "\t" + q[1] + "\t" + q[2] + "\t" + q[3]);
+
+  Serial.println((String)ax_c + "\t" + ay_c + "\t" + az_c);
+  #ifdef OLED
   display.clearDisplay();
   display.setCursor(0, 0);
-  display.println((String)ax + " " + ay + " " + az);
-  display.println((String)gx + " " + gy + " " + gz);
-  display.println((String)mx + " " + my + " " + mz);
+  display.println((String)ax_c + " " + ay_c + " " + az_c);
   display.display();
   #endif
 
   // проверяем, есть ли активность на акселе
-  if (abs(ax) >= INACTIVITY_ACCEL_THRESHOLD || abs(ay) >= INACTIVITY_ACCEL_THRESHOLD /* || az >= INACTIVITY_ACCEL_THRESHOLD*/) {
+  if (abs(ax_c) >= INACTIVITY_ACCEL_THRESHOLD || abs(ay_c) >= INACTIVITY_ACCEL_THRESHOLD || abs(az_c) >= INACTIVITY_ACCEL_THRESHOLD) {
     // активность есть, запоминаем отметку времени
     accel_last_activity_ts = millis();
   }
@@ -259,39 +234,31 @@ void loop()
 
       // сигнализируем о переходе в режим сна
       Serial.println("Going to sleep mode");
-      digitalWrite(LED_BUILTIN, LOW);   // turn the LED on (LOW is the voltage level)
-      delay(1000);                       // wait for a second
-      digitalWrite(LED_BUILTIN, HIGH);    // turn the LED off by making the voltage HIGH
-
-      #ifdef LCD
+      #ifdef OLED
       display.clearDisplay();
       display.setCursor(0, 0);
       display.println("Sleep mode");
       display.display();
       #endif
+      blinkLED(1, 1000, 500);
       
       // переводим CPU в режим сна
       LowPower.sleep();
 
-      delay(100);
-
       // сигнализируем о выходе из режима сна
-      digitalWrite(LED_BUILTIN, LOW);   // turn the LED on (LOW is the voltage level)
-      delay(500);                       // wait for a second
-      digitalWrite(LED_BUILTIN, HIGH);    // turn the LED off by making the voltage HIGH
+      blinkLED(1, 1000, 500);
 
-      // перезапуск MPU 
+      // перезапускаем MPU в обычном режиме 
       if (imu.begin() != INV_SUCCESS) { 
         Serial.println("Error reinit IMU");
         digitalWrite(LED_BUILTIN, LOW);   // turn the LED on (LOW is the voltage level)
-        #ifdef LCD
+        #ifdef OLED
         display.clearDisplay();
         display.setCursor(0, 0);
         display.println("Error reinit IMU");
         display.display();
         #endif
-        delay(5000);                       // wait for a second
-        digitalWrite(LED_BUILTIN, HIGH);    // turn the LED off by making the voltage HIGH
+        blinkLED(3, 500, 500);
       }
 
       // запрещаем генерацию прерываний
@@ -322,8 +289,6 @@ void loop()
       // set using the setCompassSampleRate() function.
       // This value can range between: 1-100Hz
       imu.setCompassSampleRate(10); // Set mag rate to 10Hz
-      
-
     }
   }
  
@@ -331,8 +296,15 @@ void loop()
 
 // заглушка обработчика прерываний от MPU
 void dummy() {
-  digitalWrite(LED_BUILTIN, LOW);   // turn the LED on (LOW is the voltage level)
-  delay(10);                       // wait for a second
-  digitalWrite(LED_BUILTIN, HIGH);    // turn the LED off by making the voltage HIGH
-  delay(30); 
+}
+
+// мигание светодиодом
+void blinkLED(int count, int delay_on, int delay_off) {
+
+  for (int i = 0; i < count; i++) {
+    digitalWrite(LED_BUILTIN, LOW);   // включаем
+    delay(delay_on);
+    digitalWrite(LED_BUILTIN, HIGH);  // выключаем
+    delay(delay_off);
+  }
 }
