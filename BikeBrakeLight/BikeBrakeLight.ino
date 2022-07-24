@@ -199,19 +199,31 @@ void loop()
   ay_c = v_accel.y;
   az_c = v_accel.z;
 
+  // усредненное значение ускорения по оси Y
+  float ay_avg = (ay_avg + ay_c) / 2.0;
+
+  float accel_brake_threshold = -1.0 * analogRead(A0) / 1023.0;
+
   //Serial.print((String)ax + "\t" + ay + "\t" + az);
   //Serial.print("\t");
   // Serial.println((String)gx + "\t" + gy + "\t" + gz);
   // Serial.println((String)mx + "\t" + my + "\t" + mz);
   // Serial.println((String)q[0] + "\t" + q[1] + "\t" + q[2] + "\t" + q[3]);
 
-  Serial.println((String)ax_c + "\t" + ay_c + "\t" + az_c);
+  //Serial.println((String)ax_c + "\t" + ay_c + "\t" + az_c);
+  Serial.println((String)ay_c + "\t" + ay_avg + "\t" + accel_brake_threshold);
+  
   #ifdef OLED
   display.clearDisplay();
   display.setCursor(0, 0);
-  display.println((String)ax_c + " " + ay_c + " " + az_c);
+  //display.println((String)ax_c + " " + ay_c + " " + az_c);
+  display.println((String)ay_c + " " +ay_avg + " " + accel_brake_threshold);
   display.display();
   #endif
+
+  if (ay_avg <= accel_brake_threshold) {
+    blinkLED(1, 300, 0);
+  }
 
   // проверяем, есть ли активность на акселе
   if (abs(ax_c) >= INACTIVITY_ACCEL_THRESHOLD || abs(ay_c) >= INACTIVITY_ACCEL_THRESHOLD || abs(az_c) >= INACTIVITY_ACCEL_THRESHOLD) {
