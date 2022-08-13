@@ -7,17 +7,29 @@
 #include "quaternionFilters.h"
 #include "helper_3dmath.h"
 
-#define INTERRUPT_PIN 1
+#define INTERRUPT_PIN 3   // pin для прерываний от MPU
+#define STOP_LED_PIN 2    // pin для управления ключом стоп-сигнала
 
 #define OLED 1 // использовать i2c OLED дисплей для вывода сообщений
 #ifdef OLED
   #include <Adafruit_GFX.h>
-  #include <Adafruit_SH110X.h>
-  #define OLED_ADDRESS 0x3c  // i2с адрес
-  #define OLED_WIDTH 128   // разрешение экрана
-  #define OLED_HEIGHT 64   
-  #define OLED_RESET -1      //   QT-PY / XIAO
-  Adafruit_SH1106G display = Adafruit_SH1106G(OLED_WIDTH, OLED_HEIGHT, &Wire, OLED_RESET);
+  // выбор типа дисплея
+  #define OLED_TYPE SSD1306  
+  #if OLED_TYPE == SSD1306
+    #include <Adafruit_SSD1306.h>
+    #define OLED_ADDRESS 0x3c  // i2с адрес
+    #define OLED_WIDTH 128   // разрешение экрана
+    #define OLED_HEIGHT 64   
+    #define OLED_RESET -1      //   QT-PY / XIAO
+    Adafruit_SSD1306 display = Adafruit_SSD1306(OLED_WIDTH, OLED_HEIGHT, &Wire, OLED_RESET);
+  #elif
+    #include <Adafruit_SH110X.h>
+    #define OLED_ADDRESS 0x3c  // i2с адрес
+    #define OLED_WIDTH 128   // разрешение экрана
+    #define OLED_HEIGHT 64   
+    #define OLED_RESET -1      //   QT-PY / XIAO
+    Adafruit_SH1106G display = Adafruit_SH1106G(OLED_WIDTH, OLED_HEIGHT, &Wire, OLED_RESET);
+  #endif
 #endif
 
 #define DEBUG 1  // использовать Serial для вывода сообщений
@@ -54,31 +66,44 @@ MPU9250_DMP imu;
 
 void setup() 
 {
+  
+  #ifdef DEBUG
   Serial.begin(115200);
   Serial.println("Starting");
+  #endif
 
-  // pin для прерываний от MPU
+  // режимы pin
   pinMode(INTERRUPT_PIN, INPUT_PULLUP);
+  pinMode(STOP_LED_PIN, OUTPUT);
 
+  // OLED дисплей
   #ifdef OLED
   delay(250); 
-  display.begin(OLED_ADDRESS, true); // OLED дисплей
+  #if OLED_TYPE == SSD1306
+  display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDRESS);
+  display.setTextSize(2); 
+  display.setTextColor(SSD1306_WHITE);
+  #elif
+  display.begin(SOLED_ADDRESS, true);
   display.setTextSize(1);
   display.setTextColor(SH110X_WHITE);
+  #endif
   display.clearDisplay();
   display.println("Starting");
   display.display();
   #endif
 
-  delay(1000);
+  delay(3000);
 
   // Call imu.begin() to verify communication and initialize
   if (imu.begin() != INV_SUCCESS)
   {
     while (1)
     {
+      #ifdef DEBUG
       Serial.println("Unable to communicate with MPU-9250");
       Serial.println();
+      #endif
 
       #ifdef OLED
       display.setCursor(0, 0);
@@ -146,11 +171,13 @@ void loop()
     //  so you don't have to specify these values.)
     if (imu.update(UPDATE_ACCEL | UPDATE_GYRO | UPDATE_COMPASS) != INV_SUCCESS) {
         // сигнализируем 
+        #ifdef DEBUG
         Serial.println("MPU update sensors failed");
+        #endif
         #ifdef OLED
         display.clearDisplay();
         display.setCursor(0, 0);
-        display.println("Error reinit IMU");
+        display.println("MPU update sensors failed");
         display.display();
         #endif
         blinkLED(3, 500, 500);
@@ -204,6 +231,7 @@ void loop()
 
   float accel_brake_threshold = -1.0 * analogRead(A0) / 1023.0;
 
+  #ifdef DEBUG
   //Serial.print((String)ax + "\t" + ay + "\t" + az);
   //Serial.print("\t");
   // Serial.println((String)gx + "\t" + gy + "\t" + gz);
@@ -212,6 +240,7 @@ void loop()
 
   //Serial.println((String)ax_c + "\t" + ay_c + "\t" + az_c);
   Serial.println((String)ay_c + "\t" + ay_avg + "\t" + accel_brake_threshold);
+  #endif
   
   #ifdef OLED
   display.clearDisplay();
@@ -240,12 +269,24 @@ void loop()
       // порога ускорения для просыпания, 
       // продолжительности применения ускорения в мс,
       // частоты выборок 
-      if (mpu_lp_motion_interrupt(ACCEL_WAKE_ON_THRESHOLD, ACCEL_WAKE_ON_DURATION, ACCEL_WAKE_ON_FREQ) != INV_SUCCESS) 
+      if (mpu_lp_motion_interrupt(ACCEL_WAKE_ON_THRESHOLD, ACCEL_WAKE_ON_DURATION, ACCEL_WAKE_ON_FREQ) != INV_SUCCESS) {
         // ошибка
-        Serial.println(F("IMU LP wake-on-move mode failed"));
+        #ifdef DEBUG
+        Serial.println(F("IMU LP W-o-M mode failed"));
+        #endif
+        #ifdef OLED
+        display.clearDisplay();
+        display.setCursor(0, 0);
+        display.println("IMU LP W-o-M mode failed");
+        display.display();
+        #endif
+        blinkLED(1, 1000, 500);
+      }
 
       // сигнализируем о переходе в режим сна
+      #ifdef DEBUG
       Serial.println("Going to sleep mode");
+      #endif
       #ifdef OLED
       display.clearDisplay();
       display.setCursor(0, 0);
