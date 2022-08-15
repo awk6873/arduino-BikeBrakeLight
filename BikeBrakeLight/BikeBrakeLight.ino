@@ -227,7 +227,7 @@ void loop()
   az_c = v_accel.z;
 
   // усредненное значение ускорения по оси Y
-  float ay_avg = (ay_avg + ay_c) / 2.0;
+  float ay_avg = (ay_avg * 3.0 + ay_c) / 4.0;
 
   float accel_brake_threshold = -1.0 * analogRead(A0) / 1023.0;
 
