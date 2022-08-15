@@ -20,7 +20,7 @@ Supported Platforms:
 #include <SparkFunMPU9250-DMP.h>
 
 #define SerialPort SerialUSB
-#define INTERRUPT_PIN 7
+#define INTERRUPT_PIN 3
 
 MPU9250_DMP imu;
 

@@ -246,7 +246,9 @@ void loop()
   display.clearDisplay();
   display.setCursor(0, 0);
   //display.println((String)ax_c + " " + ay_c + " " + az_c);
-  display.println((String)ay_c + " " +ay_avg + " " + accel_brake_threshold);
+  display.println("AY:  " + (String)ay_c);
+  display.println("Avg: " + (String)ay_avg);
+  display.println("Brk: " + (String)accel_brake_threshold);
   display.display();
   #endif
 

@@ -20,7 +20,7 @@ Supported Platforms:
 #include <SparkFunMPU9250-DMP.h>
 #include "ArduinoLowPower.h"
 
-#define INTERRUPT_PIN 1
+#define INTERRUPT_PIN 3
 
 MPU9250_DMP imu;
 
