@@ -55,8 +55,8 @@ float mx = 0, my = 0, mz = 0;
 float ax_c = 0, ay_c = 0, az_c = 0;
 
 //uint32_t delt_t = 0;                           // used to control display output rate
-uint32_t count = 0, sumCount = 0;              // used to control display output rate
-float deltat = 0.0f, sum = 0.0f;                    // integration interval for both filter schemes
+uint32_t count = 0, sumCount = 0;                // used to control display output rate
+float deltat = 0.0f, sum = 0.0f;                 // integration interval for both filter schemes
 uint32_t lastUpdate = 0;      // used to calculate integration interval
 uint32_t Now = 0; // used to calculate integration interval
 
@@ -81,11 +81,11 @@ void setup()
   delay(250); 
   #if OLED_TYPE == SSD1306
   display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDRESS);
-  display.setTextSize(2); 
+  display.setTextSize(4); 
   display.setTextColor(SSD1306_WHITE);
   #elif
-  display.begin(SOLED_ADDRESS, true);
-  display.setTextSize(1);
+  display.begin(OLED_ADDRESS, true);
+  display.setTextSize(2);
   display.setTextColor(SH110X_WHITE);
   #endif
   display.clearDisplay();
@@ -149,7 +149,7 @@ void setup()
   // This value can range between: 1-100Hz
   imu.setCompassSampleRate(10); // Set mag rate to 10Hz
 
-  //
+  // разрешаем генерацию прерываний
   imu.enableInterrupt(0);
 
   // подвешиваем обработчик по спадающему фронту
@@ -160,28 +160,27 @@ void setup()
 void loop() 
 {
 
-  // Check for new data in the FIFO
-  if ( imu.dataReady() ) { 
+  // ждем появления новых данных в FIFO
+  while(!imu.dataReady()); 
 
-    // Call update() to update the imu objects sensor data.
-    // You can specify which sensors to update by combining
-    // UPDATE_ACCEL, UPDATE_GYRO, UPDATE_COMPASS, and/or
-    // UPDATE_TEMPERATURE.
-    // (The update function defaults to accel, gyro, compass,
-    //  so you don't have to specify these values.)
-    if (imu.update(UPDATE_ACCEL | UPDATE_GYRO | UPDATE_COMPASS) != INV_SUCCESS) {
-        // сигнализируем 
-        #ifdef DEBUG
-        Serial.println("MPU update sensors failed");
-        #endif
-        #ifdef OLED
-        display.clearDisplay();
-        display.setCursor(0, 0);
-        display.println("MPU update sensors failed");
-        display.display();
-        #endif
-        blinkLED(3, 500, 500);
-    }
+  // Call update() to update the imu objects sensor data.
+  // You can specify which sensors to update by combining
+  // UPDATE_ACCEL, UPDATE_GYRO, UPDATE_COMPASS, and/or
+  // UPDATE_TEMPERATURE.
+  // (The update function defaults to accel, gyro, compass,
+  //  so you don't have to specify these values.)
+  if (imu.update(UPDATE_ACCEL | UPDATE_GYRO | UPDATE_COMPASS) != INV_SUCCESS) {
+    // сигнализируем 
+    #ifdef DEBUG
+    Serial.println("MPU update sensors failed");
+    #endif
+    #ifdef OLED
+    display.clearDisplay();
+    display.setCursor(0, 0);
+    display.println("MPU update sensors failed");
+    display.display();
+    #endif
+    blinkLED(3, 500, 500);
   }
 
   // получаем значения от акселя
@@ -229,8 +228,10 @@ void loop()
   // усредненное значение ускорения по оси Y
   float ay_avg = (ay_avg * 3.0 + ay_c) / 4.0;
 
-  float accel_brake_threshold = -1.0 * analogRead(A0) / 1023.0;
-
+  // пороги включения и выключения стоп-сигнала
+  float accel_brake_upper_threshold = -0.5 * analogRead(A0) / 1023.0;
+  float accel_brake_lower_threshold = accel_brake_upper_threshold * 0.5;
+  
   #ifdef DEBUG
   //Serial.print((String)ax + "\t" + ay + "\t" + az);
   //Serial.print("\t");
@@ -239,22 +240,28 @@ void loop()
   // Serial.println((String)q[0] + "\t" + q[1] + "\t" + q[2] + "\t" + q[3]);
 
   //Serial.println((String)ax_c + "\t" + ay_c + "\t" + az_c);
-  Serial.println((String)ay_c + "\t" + ay_avg + "\t" + accel_brake_threshold);
+  Serial.println((String)ay_c + "\t" + ay_avg);
   #endif
   
   #ifdef OLED
   display.clearDisplay();
   display.setCursor(0, 0);
-  //display.println((String)ax_c + " " + ay_c + " " + az_c);
-  display.println("AY:  " + (String)ay_c);
-  display.println("Avg: " + (String)ay_avg);
-  display.println("Brk: " + (String)accel_brake_threshold);
+  //display.println("AY:  " + (String)((ay < 0)?"-":"+") + (String)abs(ay));
+  //display.println("AYC: " + (String)((ay_c < 0)?"-":"+") + (String)abs(ay_c));
+  display.println((String)((ay_avg < 0)?"-":"+") + (String)abs(ay_avg));
+  display.println(accel_brake_upper_threshold);
   display.display();
   #endif
 
-  if (ay_avg <= accel_brake_threshold) {
-    blinkLED(1, 300, 0);
+  if (ay_avg <= accel_brake_upper_threshold) {  
+    digitalWrite(LED_BUILTIN, LOW);     // включаем св.диод на плате
+    digitalWrite(STOP_LED_PIN, HIGH);   // и стоп-сигнал 
   }
+  else 
+    if (ay_avg >= accel_brake_lower_threshold) {
+      digitalWrite(LED_BUILTIN, HIGH);     // вЫключаем св.диод на плате
+      digitalWrite(STOP_LED_PIN, LOW);     // и стоп-сигнал      
+    }
 
   // проверяем, есть ли активность на акселе
   if (abs(ax_c) >= INACTIVITY_ACCEL_THRESHOLD || abs(ay_c) >= INACTIVITY_ACCEL_THRESHOLD || abs(az_c) >= INACTIVITY_ACCEL_THRESHOLD) {
@@ -295,13 +302,13 @@ void loop()
       display.println("Sleep mode");
       display.display();
       #endif
-      blinkLED(1, 1000, 500);
+      blinkLED(1, 500, 500);
       
       // переводим CPU в режим сна
       LowPower.sleep();
 
       // сигнализируем о выходе из режима сна
-      blinkLED(1, 1000, 500);
+      blinkLED(1, 500, 500);
 
       // перезапускаем MPU в обычном режиме 
       if (imu.begin() != INV_SUCCESS) { 
@@ -353,13 +360,15 @@ void loop()
 void dummy() {
 }
 
-// мигание светодиодом
+// мигание светодиодом и стоп-сигналом
 void blinkLED(int count, int delay_on, int delay_off) {
 
   for (int i = 0; i < count; i++) {
     digitalWrite(LED_BUILTIN, LOW);   // включаем
+    digitalWrite(STOP_LED_PIN, HIGH);
     delay(delay_on);
     digitalWrite(LED_BUILTIN, HIGH);  // выключаем
+    digitalWrite(STOP_LED_PIN, LOW);
     delay(delay_off);
   }
 }
