@@ -46,3 +46,5 @@ q[2] = qa[0]*qb[2] + qb[0]*qa[2] + qa[3]*qb[1] - qb[3]*qa[1]
 q[3] = qa[0]*qb[3] + qb[0]*qa[3] + qa[1]*qb[2] - qb[1]*qa[2]
 
 https://github.com/nicolacimmino/BicycleBrakeLight
+https://www.meme.net.au/butterworth.html
+https://github.com/MartinBloedorn/libFilter

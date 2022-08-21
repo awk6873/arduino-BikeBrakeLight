@@ -62,6 +62,19 @@ uint32_t Now = 0; // used to calculate integration interval
 
 float *q;
 
+// фильтр Баттерворта 3-го порядка
+// y(n) = b0*x(n) + b1*x(n-1) + b2*x(n-2) + b3*x(n-3) - a1*y(n-1) - a2*y(n-2) - a3*y(n-3))
+#define ACCEL_FILTER_COEF_COUNT 4
+// Частота выборки: 100Hz, частота среза: 1Hz (3 dB)
+//float accell_filter_coef_b[ACCEL_FILTER_COEF_COUNT] = {0.00002915, 0.00008744, 0.00008744, 0.00002915};
+//float accell_filter_coef_a[ACCEL_FILTER_COEF_COUNT] = {1.0000, -2.8744, 2.7565, -0.8819};
+// Частота выборки: 100Hz, частота среза: 2Hz (3 dB)
+float accell_filter_coef_b[ACCEL_FILTER_COEF_COUNT] = {0.00021961, 0.00065882, 0.00065882, 0.00021961};
+float accell_filter_coef_a[ACCEL_FILTER_COEF_COUNT] = {1.0000, -2.7488, 2.5282, -0.7776};
+
+float accell_filter_input[ACCEL_FILTER_COEF_COUNT] = {0, 0, 0, 0};
+float accell_filter_output[ACCEL_FILTER_COEF_COUNT] = {0, 0, 0, 0};
+
 MPU9250_DMP imu;
 
 void setup() 
@@ -138,16 +151,16 @@ void setup()
   // of the accelerometer and gyroscope.
   // Can be any of the following: 188, 98, 42, 20, 10, 5
   // (values are in Hz).
-  imu.setLPF(5); // Set LPF corner frequency to 5Hz
+  imu.setLPF(50); // Set LPF corner frequency to 20Hz
 
   // The sample rate of the accel/gyro can be set using
   // setSampleRate. Acceptable values range from 4Hz to 1kHz
-  imu.setSampleRate(10); // Set sample rate to 10Hz
+  imu.setSampleRate(100); // Set sample rate to 50Hz
 
   // Likewise, the compass (magnetometer) sample rate can be
   // set using the setCompassSampleRate() function.
   // This value can range between: 1-100Hz
-  imu.setCompassSampleRate(10); // Set mag rate to 10Hz
+  imu.setCompassSampleRate(100); // Set mag rate to 50Hz
 
   // разрешаем генерацию прерываний
   imu.enableInterrupt(0);
@@ -225,12 +238,32 @@ void loop()
   ay_c = v_accel.y;
   az_c = v_accel.z;
 
-  // усредненное значение ускорения по оси Y
-  float ay_avg = (ay_avg * 3.0 + ay_c) / 4.0;
+  // отфильтрованное значение ускорения по оси Y
+  // вариант с фильтром по скользящему среднему
+  //float ay_avg = (ay_avg * 3.0 + ay_c) / 4.0;
+
+  // вариант с фильтром Баттерворта
+  // сдвигаем сэмплы
+  for (int i = ACCEL_FILTER_COEF_COUNT - 1; i > 0; i--) {
+    accell_filter_input[i] = accell_filter_input[i - 1];
+    accell_filter_output[i] = accell_filter_output[i - 1];
+  }
+  accell_filter_input[0] = ay_c;
+  // accell_filter_input[0] = ay;
+  
+  // вычисляем текущее значение
+  accell_filter_output[0] = accell_filter_coef_b[0] * accell_filter_input[0]
+                          + accell_filter_coef_b[1] * accell_filter_input[1]
+                          + accell_filter_coef_b[2] * accell_filter_input[2]
+                          + accell_filter_coef_b[3] * accell_filter_input[3]
+                          - accell_filter_coef_a[1] * accell_filter_output[1]
+                          - accell_filter_coef_a[2] * accell_filter_output[2]
+                          - accell_filter_coef_a[3] * accell_filter_output[3];
+  float ay_avg = accell_filter_output[0];
 
   // пороги включения и выключения стоп-сигнала
-  float accel_brake_upper_threshold = -0.5 * analogRead(A0) / 1023.0;
-  float accel_brake_lower_threshold = accel_brake_upper_threshold * 0.5;
+  float accel_brake_upper_threshold = -0.3 * analogRead(A0) / 1023.0;
+  float accel_brake_lower_threshold = accel_brake_upper_threshold * 0.7;
   
   #ifdef DEBUG
   //Serial.print((String)ax + "\t" + ay + "\t" + az);
@@ -241,6 +274,20 @@ void loop()
 
   //Serial.println((String)ax_c + "\t" + ay_c + "\t" + az_c);
   Serial.println((String)ay_c + "\t" + ay_avg);
+
+/*
+  Serial.print("X: \t");
+  Serial.print(accell_filter_input[0], 10);
+  Serial.print("\t");
+  Serial.print("Y: \t");
+  Serial.print(accell_filter_output[0], 10);
+  Serial.print("\t");
+  Serial.print(accell_filter_output[1], 10);
+  Serial.print("\t");
+  Serial.print(accell_filter_output[2], 10);
+  Serial.print("\t");
+  Serial.println(accell_filter_output[3], 10);
+*/
   #endif
   
   #ifdef OLED
@@ -341,16 +388,16 @@ void loop()
       // of the accelerometer and gyroscope.
       // Can be any of the following: 188, 98, 42, 20, 10, 5
       // (values are in Hz).
-      imu.setLPF(5); // Set LPF corner frequency to 5Hz
+      imu.setLPF(50); // Set LPF corner frequency to 20Hz
       
       // The sample rate of the accel/gyro can be set using
       // setSampleRate. Acceptable values range from 4Hz to 1kHz
-      imu.setSampleRate(10); // Set sample rate to 10Hz
+      imu.setSampleRate(100); // Set sample rate to 50Hz
       
       // Likewise, the compass (magnetometer) sample rate can be
       // set using the setCompassSampleRate() function.
       // This value can range between: 1-100Hz
-      imu.setCompassSampleRate(10); // Set mag rate to 10Hz
+      imu.setCompassSampleRate(100); // Set mag rate to 50Hz
     }
   }
  
