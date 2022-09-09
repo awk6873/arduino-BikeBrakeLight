@@ -66,11 +66,11 @@ float *q;
 // y(n) = b0*x(n) + b1*x(n-1) + b2*x(n-2) + b3*x(n-3) - a1*y(n-1) - a2*y(n-2) - a3*y(n-3))
 #define ACCEL_FILTER_COEF_COUNT 4
 // Частота выборки: 100Hz, частота среза: 1Hz (3 dB)
-//float accell_filter_coef_b[ACCEL_FILTER_COEF_COUNT] = {0.00002915, 0.00008744, 0.00008744, 0.00002915};
-//float accell_filter_coef_a[ACCEL_FILTER_COEF_COUNT] = {1.0000, -2.8744, 2.7565, -0.8819};
+float accell_filter_coef_b[ACCEL_FILTER_COEF_COUNT] = {0.00002915, 0.00008744, 0.00008744, 0.00002915};
+float accell_filter_coef_a[ACCEL_FILTER_COEF_COUNT] = {1.0000, -2.8744, 2.7565, -0.8819};
 // Частота выборки: 100Hz, частота среза: 2Hz (3 dB)
-float accell_filter_coef_b[ACCEL_FILTER_COEF_COUNT] = {0.00021961, 0.00065882, 0.00065882, 0.00021961};
-float accell_filter_coef_a[ACCEL_FILTER_COEF_COUNT] = {1.0000, -2.7488, 2.5282, -0.7776};
+//float accell_filter_coef_b[ACCEL_FILTER_COEF_COUNT] = {0.00021961, 0.00065882, 0.00065882, 0.00021961};
+//float accell_filter_coef_a[ACCEL_FILTER_COEF_COUNT] = {1.0000, -2.7488, 2.5282, -0.7776};
 
 float accell_filter_input[ACCEL_FILTER_COEF_COUNT] = {0, 0, 0, 0};
 float accell_filter_output[ACCEL_FILTER_COEF_COUNT] = {0, 0, 0, 0};
@@ -155,12 +155,12 @@ void setup()
 
   // The sample rate of the accel/gyro can be set using
   // setSampleRate. Acceptable values range from 4Hz to 1kHz
-  imu.setSampleRate(100); // Set sample rate to 50Hz
+  imu.setSampleRate(100); // Set sample rate to 100Hz
 
   // Likewise, the compass (magnetometer) sample rate can be
   // set using the setCompassSampleRate() function.
   // This value can range between: 1-100Hz
-  imu.setCompassSampleRate(100); // Set mag rate to 50Hz
+  imu.setCompassSampleRate(100); // Set mag rate to 100Hz
 
   // разрешаем генерацию прерываний
   imu.enableInterrupt(0);
