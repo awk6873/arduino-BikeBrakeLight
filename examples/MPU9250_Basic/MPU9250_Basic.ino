@@ -64,12 +64,12 @@ void setup()
 
   // The sample rate of the accel/gyro can be set using
   // setSampleRate. Acceptable values range from 4Hz to 1kHz
-  imu.setSampleRate(10); // Set sample rate to 10Hz
+  imu.setSampleRate(12); // Set sample rate to 10Hz
 
   // Likewise, the compass (magnetometer) sample rate can be
   // set using the setCompassSampleRate() function.
   // This value can range between: 1-100Hz
-  imu.setCompassSampleRate(10); // Set mag rate to 10Hz
+  imu.setCompassSampleRate(2); // Set mag rate to 10Hz
 }
 
 void loop() 
@@ -119,4 +119,3 @@ void printIMUData(void)
   SerialPort.println("Time: " + String(imu.time) + " ms");
   SerialPort.println();
 }
-
