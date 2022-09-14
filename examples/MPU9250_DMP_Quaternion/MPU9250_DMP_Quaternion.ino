@@ -54,6 +54,8 @@ void setup()
 
 void loop() 
 {
+  while(!imu.fifoAvailable());
+  
   // Check for new data in the FIFO
   if ( imu.fifoAvailable() )
   {
@@ -81,7 +83,7 @@ void printIMUData(void)
   float q2 = imu.calcQuat(imu.qy);
   float q3 = imu.calcQuat(imu.qz);
 
-  SerialPort.println("Q: " + String(q0, 4) + ", " +
+  SerialPort.println(String(q0, 4) + ", " +
                     String(q1, 4) + ", " + String(q2, 4) + 
                     ", " + String(q3, 4));
   //SerialPort.println("R/P/Y: " + String(imu.roll) + ", "

@@ -96,7 +96,7 @@ byte myLed = 13;                                                    // Set up pi
   #define TASK 6    // View ... pitch, roll, and compass-heading on 16x2 LCD display
 */
 
-#define TASK 4
+#define TASK 2
 
 // ----- user offsets and scale-factors
 /*

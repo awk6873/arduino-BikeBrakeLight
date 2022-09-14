@@ -48,3 +48,27 @@ q[3] = qa[0]*qb[3] + qb[0]*qa[3] + qa[1]*qb[2] - qb[1]*qa[2]
 https://github.com/nicolacimmino/BicycleBrakeLight
 https://www.meme.net.au/butterworth.html
 https://github.com/MartinBloedorn/libFilter
+
+
+Калибровка компаса
+Mag_x_offset = 418.515,
+Mag_y_offset = 247.725,
+Mag_z_offset = -122.58499,
+Mag_x_scale = 0.80680895,
+Mag_y_scale = 1.3630503,
+Mag_z_scale = 0.97380394;
+
+Mag_x_offset = 418.515,
+Mag_y_offset = 251.37,
+Mag_z_offset = -210.15,
+Mag_x_scale = 0.9017717,
+Mag_y_scale = 1.5013924,
+Mag_z_scale = 0.8163109;
+
+Mag_x_offset = 429.34,
+Mag_y_offset = 262.3,
+Mag_z_offset = -178.625,
+Mag_x_scale = 0.95846725,
+Mag_y_scale = 1.5688462,
+Mag_z_scale = 0.75800276;
+
