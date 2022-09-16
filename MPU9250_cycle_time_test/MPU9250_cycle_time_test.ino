@@ -246,18 +246,18 @@ void loop()
   sumCount++;
 
   // вычисляем кватернион положения относительно Земли
-//  MahonyQuaternionUpdate(
-//  ax,                ay,                  az,
-//  gx * DEG_TO_RAD,   gy * DEG_TO_RAD,     gz * DEG_TO_RAD,
-//  my,                mx,                  -mz,
-//  deltat);
+  MahonyQuaternionUpdate(
+  ax,                ay,                  az,
+  gx * DEG_TO_RAD,   gy * DEG_TO_RAD,     gz * DEG_TO_RAD,
+  my,                mx,                  -mz,
+  deltat);
 
-  MadgwickQuaternionUpdate(
-    ax,                ay,                  az,
-    gx * DEG_TO_RAD,   gy * DEG_TO_RAD,     gz * DEG_TO_RAD,
-    my,                mx,                  -mz,
-    deltat
-  );
+//  MadgwickQuaternionUpdate(
+//    ax,                ay,                  az,
+//    gx * DEG_TO_RAD,   gy * DEG_TO_RAD,     gz * DEG_TO_RAD,
+//    my,                mx,                  -mz,
+//    deltat
+//  );
 
   qn = (float *)getQ();
   Quaternion q1(qn[0], qn[1], qn[2], qn[3]);       // кватернион

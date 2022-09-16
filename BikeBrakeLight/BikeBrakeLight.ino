@@ -10,26 +10,15 @@
 #define INTERRUPT_PIN 3   // pin для прерываний от MPU
 #define STOP_LED_PIN 2    // pin для управления ключом стоп-сигнала
 
-#define OLED 1 // использовать i2c OLED дисплей для вывода сообщений
+#define OLED 1            // использовать i2c OLED дисплей SSD1306 для вывода сообщений
 #ifdef OLED
   #include <Adafruit_GFX.h>
-  // выбор типа дисплея
-  #define OLED_TYPE SSD1306  
-  #if OLED_TYPE == SSD1306
-    #include <Adafruit_SSD1306.h>
-    #define OLED_ADDRESS 0x3c  // i2с адрес
-    #define OLED_WIDTH 128   // разрешение экрана
-    #define OLED_HEIGHT 64   
-    #define OLED_RESET -1      //   QT-PY / XIAO
-    Adafruit_SSD1306 display = Adafruit_SSD1306(OLED_WIDTH, OLED_HEIGHT, &Wire, OLED_RESET);
-  #elif
-    #include <Adafruit_SH110X.h>
-    #define OLED_ADDRESS 0x3c  // i2с адрес
-    #define OLED_WIDTH 128   // разрешение экрана
-    #define OLED_HEIGHT 64   
-    #define OLED_RESET -1      //   QT-PY / XIAO
-    Adafruit_SH1106G display = Adafruit_SH1106G(OLED_WIDTH, OLED_HEIGHT, &Wire, OLED_RESET);
-  #endif
+  #include <Adafruit_SSD1306.h>
+  #define OLED_ADDRESS 0x3c  // i2с адрес
+  #define OLED_WIDTH 128     // разрешение экрана
+  #define OLED_HEIGHT 64   
+  #define OLED_RESET -1      //   QT-PY / XIAO
+  Adafruit_SSD1306 display = Adafruit_SSD1306(OLED_WIDTH, OLED_HEIGHT, &Wire, OLED_RESET);
 #endif
 
 #define DEBUG 1  // использовать Serial для вывода сообщений
@@ -77,11 +66,11 @@ float *qn;
 // фильтр для ускорения
 #define ACCEL_FILTER_COEF_COUNT 4
 // Частота выборки: 100Hz, частота среза: 1Hz (3 dB)
-//float accell_filter_coef_b[ACCEL_FILTER_COEF_COUNT] = {0.00002915, 0.00008744, 0.00008744, 0.00002915};
-//float accell_filter_coef_a[ACCEL_FILTER_COEF_COUNT] = {1.0000, -2.8744, 2.7565, -0.8819};
+//float accell_filter_coef_b[ACCEL_FILTER_COEF_COUNT] = {2.91464947e-5, 8.74394842e-5, 8.74394842e-5, 2.91464947e-5};
+//float accell_filter_coef_a[ACCEL_FILTER_COEF_COUNT] = {1.0000, -2.87435692, 2.75648322, -0.88189312};
 // Частота выборки: 100Hz, частота среза: 2Hz (3 dB)
-//float accell_filter_coef_b[ACCEL_FILTER_COEF_COUNT] = {0.00021961, 0.00065882, 0.00065882, 0.00021961};
-//float accell_filter_coef_a[ACCEL_FILTER_COEF_COUNT] = {1.0000, -2.7488, 2.5282, -0.7776};
+float accell_filter_coef_b[ACCEL_FILTER_COEF_COUNT] = {0.00021961, 0.00065882, 0.00065882, 0.00021961};
+float accell_filter_coef_a[ACCEL_FILTER_COEF_COUNT] = {1.0000, -2.74883592, 2.52823137, -0.77763860};
 // Частота выборки: 100Hz, частота среза: 4Hz (3 dB)
 //float accell_filter_coef_b[ACCEL_FILTER_COEF_COUNT] = {0.0015669, 0.00470072, 0.00470072, 0.0015669};
 //float accell_filter_coef_a[ACCEL_FILTER_COEF_COUNT] = {1.0000, -2.498444, 2.115114, -0.6040692};
@@ -91,8 +80,8 @@ float *qn;
 //float accell_filter_coef_a[ACCEL_FILTER_COEF_COUNT] = {1.0,       -2.37391304, 1.92753623,-0.53043478};
 
 // Частота выборки: 20Hz, частота среза: 2Hz (3 dB)
-float accell_filter_coef_b[ACCEL_FILTER_COEF_COUNT] = {0.01818181, 0.05454545, 0.05454545, 0.01818181};
-float accell_filter_coef_a[ACCEL_FILTER_COEF_COUNT] = {1.0,       -1.76363636, 1.18181818,-0.27272727};
+//float accell_filter_coef_b[ACCEL_FILTER_COEF_COUNT] = {0.01818181, 0.05454545, 0.05454545, 0.01818181};
+//float accell_filter_coef_a[ACCEL_FILTER_COEF_COUNT] = {1.0,       -1.76363636, 1.18181818,-0.27272727};
 
 float ay_filter_input[ACCEL_FILTER_COEF_COUNT] = {0, 0, 0, 0};
 float ay_filter_output[ACCEL_FILTER_COEF_COUNT] = {0, 0, 0, 0};
@@ -115,14 +104,14 @@ float az_filter_output[ACCEL_FILTER_COEF_COUNT] = {0, 0, 0, 0};
 //float gravity_filter_coef_a[GRAVITY_FILTER_COEF_COUNT] = {1.0000, -2.8744, 2.7565, -0.8819};
 
 // Частота выборки: 20Hz, частота среза: 0.5Hz (3 dB)
-#define GRAVITY_FILTER_COEF_COUNT 4
-float gravity_filter_coef_b[GRAVITY_FILTER_COEF_COUNT] = {4.16666666e-4, 0.00125, 0.00125, 4.16666666e-4};
-float gravity_filter_coef_a[GRAVITY_FILTER_COEF_COUNT] = {1.0, -2.68666666, 2.42, -0.73};
+//#define GRAVITY_FILTER_COEF_COUNT 4
+//float gravity_filter_coef_b[GRAVITY_FILTER_COEF_COUNT] = {4.16666666e-4, 0.00125, 0.00125, 4.16666666e-4};
+//float gravity_filter_coef_a[GRAVITY_FILTER_COEF_COUNT] = {1.0, -2.68666666, 2.42, -0.73};
 
-float ay_g_filter_input[GRAVITY_FILTER_COEF_COUNT] = {0, 0, 0, 0};
-float ay_g_filter_output[GRAVITY_FILTER_COEF_COUNT] = {0, 0, 0, 0};
-float az_g_filter_input[GRAVITY_FILTER_COEF_COUNT] = {0, 0, 0, 0};
-float az_g_filter_output[GRAVITY_FILTER_COEF_COUNT] = {0, 0, 0, 0};
+//float ay_g_filter_input[GRAVITY_FILTER_COEF_COUNT] = {0, 0, 0, 0};
+//float ay_g_filter_output[GRAVITY_FILTER_COEF_COUNT] = {0, 0, 0, 0};
+//float az_g_filter_input[GRAVITY_FILTER_COEF_COUNT] = {0, 0, 0, 0};
+//float az_g_filter_output[GRAVITY_FILTER_COEF_COUNT] = {0, 0, 0, 0};
 
 MPU9250_DMP imu;
 
@@ -138,18 +127,12 @@ void setup()
   pinMode(INTERRUPT_PIN, INPUT_PULLUP);
   pinMode(STOP_LED_PIN, OUTPUT);
 
-  // OLED дисплей
+  // OLED дисплей SSD1306
   #ifdef OLED
   delay(250); 
-  #if OLED_TYPE == SSD1306
   display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDRESS);
   display.setTextSize(4); 
   display.setTextColor(SSD1306_WHITE);
-  #elif
-  display.begin(OLED_ADDRESS, true);
-  display.setTextSize(2);
-  display.setTextColor(SH110X_WHITE);
-  #endif
   display.clearDisplay();
   display.println("Starting");
   display.display();
@@ -180,11 +163,7 @@ void setup()
   // запрещаем генерацию прерываний 
   imu.enableInterrupt(0);
 
-  // Use setSensors to turn on or off MPU-9250 sensors.
-  // Any of the following defines can be combined:
-  // INV_XYZ_GYRO, INV_XYZ_ACCEL, INV_XYZ_COMPASS,
-  // INV_X_GYRO, INV_Y_GYRO, or INV_Z_GYRO
-  // Enable all sensors:
+  // будем использовать все сенсоры
   imu.setSensors(INV_XYZ_GYRO | INV_XYZ_ACCEL | INV_XYZ_COMPASS);
 
   // Use setGyroFSR() and setAccelFSR() to configure the
@@ -200,16 +179,16 @@ void setup()
   // of the accelerometer and gyroscope.
   // Can be any of the following: 188, 98, 42, 20, 10, 5
   // (values are in Hz).
-  imu.setLPF(10); // Set LPF corner frequency to 20Hz
+  imu.setLPF(42); // Set LPF corner frequency to 42Hz
 
   // The sample rate of the accel/gyro can be set using
   // setSampleRate. Acceptable values range from 4Hz to 1kHz
-  imu.setSampleRate(20); // Set sample rate to 20Hz
+  imu.setSampleRate(100); // Set sample rate to 100Hz
 
   // Likewise, the compass (magnetometer) sample rate can be
   // set using the setCompassSampleRate() function.
   // This value can range between: 1-100Hz
-  imu.setCompassSampleRate(20); // Set mag rate to 20Hz
+  imu.setCompassSampleRate(100); // Set mag rate to 100Hz
 
   // разрешаем генерацию прерываний
   imu.enableInterrupt(0);
@@ -267,17 +246,18 @@ void loop()
   sumCount++;
 
   // вычисляем кватернион положения относительно Земли
-//  MahonyQuaternionUpdate(
-//  ax,                ay,                  az,
-//  gx * DEG_TO_RAD,   gy * DEG_TO_RAD,     gz * DEG_TO_RAD,
-//  my,                mx,                  -mz,
-//  deltat);
-
-  MadgwickQuaternionUpdate(
+  MahonyQuaternionUpdate(
   ax,                ay,                  az,
   gx * DEG_TO_RAD,   gy * DEG_TO_RAD,     gz * DEG_TO_RAD,
   my,                mx,                  -mz,
   deltat);
+
+//  MadgwickQuaternionUpdate(
+//    ax,                ay,                  az,
+//    gx * DEG_TO_RAD,   gy * DEG_TO_RAD,     gz * DEG_TO_RAD,
+//    my,                mx,                  -mz,
+//    deltat
+//  );
 
   qn = (float *)getQ();
   Quaternion q1(qn[0], qn[1], qn[2], qn[3]);       // кватернион
@@ -295,9 +275,6 @@ void loop()
   az_c = v_accel.z;
   float ay_avg = butterworth_filter(ay_c, ACCEL_FILTER_COEF_COUNT, accell_filter_coef_b, accell_filter_coef_a, ay_filter_input, ay_filter_output);
 
-  // отфильтрованное значение ускорения по оси Y
-  // вариант с фильтром по скользящему среднему
-  //float ay_avg = (ay_avg * 3.0 + ay_c) / 4.0;
 /*
   // вариант с фильтром Баттерворта
   float ay_f = butterworth_filter(ay, ACCEL_FILTER_COEF_COUNT, accell_filter_coef_b, accell_filter_coef_a, ay_filter_input, ay_filter_output);
@@ -310,6 +287,10 @@ void loop()
   // пороги включения и выключения стоп-сигнала
   float accel_brake_upper_threshold = -0.2 * analogRead(A0) / 1023.0;
   float accel_brake_lower_threshold = accel_brake_upper_threshold * 0.7;
+
+  // параметр для фильтра Mahony
+  //float Kp = 120 * analogRead(A0) / 1023.0;
+  //setKp(Kp);
   
   #ifdef DEBUG
   //Serial.print((String)imu.ax + "\t" + imu.ay + "\t" +imu.az + "\t");
@@ -319,10 +300,10 @@ void loop()
   //Serial.print("\t");
   // Serial.println((String)gx + "\t" + gy + "\t" + gz);
   //Serial.println((String)mx + "\t" + my + "\t" + mz);
-  //Serial.println((String)qn[0] + "\t" + qn[1] + "\t" + qn[2] + "\t" + qn[3] + "\t" + deltat);
+  //Serial.println((String)qn[0] + "\t" + qn[1] + "\t" + qn[2] + "\t" + qn[3]); // + "\t" + Kp);
 
-  //Serial.println((String)ax_c + "\t" + ay_c + "\t" + az_c);
-  Serial.println((String)ay + "\t" + ay_c + "\t" + ay_avg);
+  Serial.println((String)ax_c + "\t" + ay_c + "\t" + az_c);
+  //Serial.println((String)ay + "\t" + ay_c + "\t" + ay_avg);
 
 /*
   Serial.print("X: \t");
@@ -340,11 +321,13 @@ void loop()
   #endif
   
   #ifdef OLED
-  display.clearDisplay();
-  display.setCursor(0, 0);
-  display.println((String)((ay_avg < 0)?"-":"+") + (String)abs(ay_avg));
-  display.println(accel_brake_upper_threshold);
-  display.display();
+  if (sumCount % 10 == 0) {
+    display.clearDisplay();
+    display.setCursor(0, 0);
+    display.println((String)((ay_avg < 0)?"-":"+") + (String)abs(ay_avg));
+    display.println(accel_brake_upper_threshold);
+    display.display();
+  }
   #endif
 
   if (ay_avg <= accel_brake_upper_threshold) {  
@@ -359,7 +342,6 @@ void loop()
 
   // проверяем, есть ли активность на акселе
   if (abs(ax_c) >= INACTIVITY_ACCEL_THRESHOLD || abs(ay_c) >= INACTIVITY_ACCEL_THRESHOLD || abs(az_c) >= INACTIVITY_ACCEL_THRESHOLD) {
-  // if (abs(ax) >= INACTIVITY_ACCEL_THRESHOLD || abs(ay) >= INACTIVITY_ACCEL_THRESHOLD) {
     // активность есть, запоминаем отметку времени
     accel_last_activity_ts = millis();
   }
@@ -436,16 +418,16 @@ void loop()
       // of the accelerometer and gyroscope.
       // Can be any of the following: 188, 98, 42, 20, 10, 5
       // (values are in Hz).
-      imu.setLPF(10); // Set LPF corner frequency to 10Hz
+      imu.setLPF(42); // Set LPF corner frequency to 42Hz
       
       // The sample rate of the accel/gyro can be set using
       // setSampleRate. Acceptable values range from 4Hz to 1kHz
-      imu.setSampleRate(20); // Set sample rate to 20Hz
+      imu.setSampleRate(100); // Set sample rate to 100Hz
       
       // Likewise, the compass (magnetometer) sample rate can be
       // set using the setCompassSampleRate() function.
       // This value can range between: 1-100Hz
-      imu.setCompassSampleRate(20); // Set mag rate to 20Hz
+      imu.setCompassSampleRate(100); // Set mag rate to 100Hz
     }
   }
 }

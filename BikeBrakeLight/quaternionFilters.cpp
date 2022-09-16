@@ -13,7 +13,7 @@
 
 // These are the free parameters in the Mahony filter and fusion scheme, Kp
 // for proportional feedback, Ki for integral
-#define Kp 2.0f * 5.0f
+float Kp = 50;
 #define Ki 0.0f
 
 static float GyroMeasError = PI * (40.0f / 180.0f);
@@ -232,3 +232,5 @@ void MahonyQuaternionUpdate(float ax, float ay, float az, float gx, float gy, fl
 }
 
 const float * getQ () { return q; }
+
+void setKp(float v) { Kp = v; }
