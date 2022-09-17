@@ -42,6 +42,13 @@ float gx = 0, gy = 0, gz = 0;
 float mx = 0, my = 0, mz = 0;
 // значения от акселя после компенсации гравитации
 float ax_c = 0, ay_c = 0, az_c = 0;
+// усредненное значение
+float ay_avg = 0;
+
+// смещения для калибровки акселя
+int ax_offset = -125;
+int ay_offset = -50;
+int az_offset = -200;
 
 // смещения и коэфф.для калибровки мага
 int mx_offset = 420;
@@ -225,9 +232,9 @@ void loop()
   }
 
   // получаем значения от акселя
-  ax = imu.calcAccel(imu.ax);
-  ay = imu.calcAccel(imu.ay); 
-  az = imu.calcAccel(imu.az);
+  ax = imu.calcAccel(imu.ax - ax_offset);
+  ay = imu.calcAccel(imu.ay - ay_offset); 
+  az = imu.calcAccel(imu.az - az_offset);
 
   // получаем значения от гиро
   gx = imu.calcGyro(imu.gx);
@@ -273,37 +280,36 @@ void loop()
   ax_c = v_accel.x;
   ay_c = v_accel.y;
   az_c = v_accel.z;
-  float ay_avg = butterworth_filter(ay_c, ACCEL_FILTER_COEF_COUNT, accell_filter_coef_b, accell_filter_coef_a, ay_filter_input, ay_filter_output);
 
-/*
+  // отфильтрованное значение ускорения по оси Y
+  // вариант с фильтром по скользящему среднему
+  float avg_coef = 50.0 * analogRead(A0) / 1023.0;
+  ay_avg = (ay_avg * (avg_coef - 1) + ay_c) / avg_coef;
   // вариант с фильтром Баттерворта
-  float ay_f = butterworth_filter(ay, ACCEL_FILTER_COEF_COUNT, accell_filter_coef_b, accell_filter_coef_a, ay_filter_input, ay_filter_output);
-  float az_f = butterworth_filter(az, ACCEL_FILTER_COEF_COUNT, accell_filter_coef_b, accell_filter_coef_a, az_filter_input, az_filter_output);
-  float ay_g_f = butterworth_filter(ay, ACCEL_FILTER_COEF_COUNT, gravity_filter_coef_b, gravity_filter_coef_a, ay_g_filter_input, ay_g_filter_output);
-  float az_g_f = butterworth_filter(az, ACCEL_FILTER_COEF_COUNT, gravity_filter_coef_b, gravity_filter_coef_a, az_g_filter_input, az_g_filter_output);
-  // компенсируем склоны/подъемы
-  float ay_avg = ay_f * az_g_f - ay_g_f * az_f;
-*/
+  //ay_avg = butterworth_filter(ay_c, ACCEL_FILTER_COEF_COUNT, accell_filter_coef_b, accell_filter_coef_a, ay_filter_input, ay_filter_output);
+
   // пороги включения и выключения стоп-сигнала
-  float accel_brake_upper_threshold = -0.2 * analogRead(A0) / 1023.0;
-  float accel_brake_lower_threshold = accel_brake_upper_threshold * 0.7;
+  //float accel_brake_upper_threshold = -0.2 * analogRead(A0) / 1023.0;
+  //float accel_brake_lower_threshold = accel_brake_upper_threshold * 0.7;
+  float accel_brake_upper_threshold = -0.05;
+  float accel_brake_lower_threshold = -0.03;
 
   // параметр для фильтра Mahony
   //float Kp = 120 * analogRead(A0) / 1023.0;
   //setKp(Kp);
   
   #ifdef DEBUG
-  //Serial.print((String)imu.ax + "\t" + imu.ay + "\t" +imu.az + "\t");
+  //Serial.println((String)imu.ax + "\t" + imu.ay + "\t" +imu.az + "\t");
   //Serial.print((String)imu.gx + "\t" + imu.gy + "\t" +imu.gz + "\t");
   //Serial.println((String)imu.mx + "\t" + imu.my + "\t" +imu.mz);
   //Serial.println((String)ax + "\t" + ay + "\t" + az);
   //Serial.print("\t");
-  // Serial.println((String)gx + "\t" + gy + "\t" + gz);
+  //Serial.println((String)gx + "\t" + gy + "\t" + gz);
   //Serial.println((String)mx + "\t" + my + "\t" + mz);
   //Serial.println((String)qn[0] + "\t" + qn[1] + "\t" + qn[2] + "\t" + qn[3]); // + "\t" + Kp);
 
-  Serial.println((String)ax_c + "\t" + ay_c + "\t" + az_c);
-  //Serial.println((String)ay + "\t" + ay_c + "\t" + ay_avg);
+  //Serial.println((String)ax_c + "\t" + ay_c + "\t" + az_c);
+  Serial.println((String)ay + "\t" + ay_c + "\t" + ay_avg);
 
 /*
   Serial.print("X: \t");
@@ -325,7 +331,7 @@ void loop()
     display.clearDisplay();
     display.setCursor(0, 0);
     display.println((String)((ay_avg < 0)?"-":"+") + (String)abs(ay_avg));
-    display.println(accel_brake_upper_threshold);
+    display.println(avg_coef);
     display.display();
   }
   #endif

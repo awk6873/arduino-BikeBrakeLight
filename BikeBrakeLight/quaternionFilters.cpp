@@ -13,7 +13,7 @@
 
 // These are the free parameters in the Mahony filter and fusion scheme, Kp
 // for proportional feedback, Ki for integral
-float Kp = 50;
+float Kp = 40;
 #define Ki 0.0f
 
 static float GyroMeasError = PI * (40.0f / 180.0f);
