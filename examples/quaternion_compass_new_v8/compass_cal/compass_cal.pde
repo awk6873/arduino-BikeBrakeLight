@@ -139,7 +139,7 @@ void setup()
 
   // ----- configure the serial port
   printArray(Serial.list()); 
-  myPort = new Serial(this, Serial.list()[0], 115200);
+  myPort = new Serial(this, Serial.list()[2], 115200);
   myPort.bufferUntil('\n');                      // serialEvent() won't trigger until buffer has "\n"
   myPort.clear();
 }

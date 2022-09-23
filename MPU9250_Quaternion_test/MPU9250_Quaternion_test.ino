@@ -30,9 +30,9 @@ void setup()
   Serial.println("Starting");
 
   // Set pin 7 as INPUT_PULLUP to avoid spurious wakeup
-  pinMode(INTERRUPT_PIN, INPUT_PULLUP);
+  //pinMode(INTERRUPT_PIN, INPUT_PULLUP);
   // Attach a wakeup interrupt on pin 8, calling repetitionsIncrease when the device is woken up
-  LowPower.attachInterruptWakeup(INTERRUPT_PIN, dummy, LOW);
+  //LowPower.attachInterruptWakeup(INTERRUPT_PIN, dummy, LOW);
 
   // Call imu.begin() to verify communication and initialize
   if (imu.begin() != INV_SUCCESS)
@@ -59,13 +59,13 @@ void setup()
 
   // Use enableInterrupt() to configure the MPU-9250's 
   // interrupt output as a "data ready" indicator.
-  imu.enableInterrupt();
+  //imu.enableInterrupt();
 
   // The interrupt level can either be active-high or low.
   // Configure as active-low, since we'll be using the pin's
   // internal pull-up resistor.
   // Options are INT_ACTIVE_LOW or INT_ACTIVE_HIGH
-  imu.setIntLevel(INT_ACTIVE_LOW);
+  //imu.setIntLevel(INT_ACTIVE_LOW);
 
   // The interrupt can be set to latch until data has
   // been read, or to work as a 50us pulse.
@@ -73,7 +73,7 @@ void setup()
   // as soon as we see the pin go LOW.
   // Options are INT_LATCHED or INT_50US_PULSE
   //imu.setIntLatched(INT_LATCHED);
-  imu.setIntLatched(INT_50US_PULSE);
+  //imu.setIntLatched(INT_50US_PULSE);
 
 }
 
@@ -92,11 +92,11 @@ void loop()
       // computeEulerAngles can be used -- after updating the
       // quaternion values -- to estimate roll, pitch, and yaw
       //imu.computeEulerAngles();
-      //printIMUData();
+      printIMUData();
       
       ts_delta = millis() - ts;
       ts = millis();
-      Serial.println(ts_delta);
+      //Serial.println(ts_delta);
     }
   }
 
@@ -181,7 +181,7 @@ void loop()
   digitalWrite(LED_BUILTIN, HIGH);
   // Triggers an infinite sleep (the device will be woken up only by the registered wakeup sources)
   // The power consumption of the chip will drop consistently
-  LowPower.sleep();
+  //LowPower.sleep();
 }
 
 void printIMUData(void)
