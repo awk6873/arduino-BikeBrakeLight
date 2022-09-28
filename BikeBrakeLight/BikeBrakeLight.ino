@@ -76,11 +76,11 @@ float *qn;
 // фильтр для ускорения
 #define ACCEL_FILTER_COEF_COUNT 4
 // Частота выборки: 100Hz, частота среза: 1Hz (3 dB)
-//float accel_filter_coef_b[ACCEL_FILTER_COEF_COUNT] = {2.91464947e-5, 8.74394842e-5, 8.74394842e-5, 2.91464947e-5};
-//float accel_filter_coef_a[ACCEL_FILTER_COEF_COUNT] = {1.0000, -2.87435692, 2.75648322, -0.88189312};
+float accel_filter_coef_b[ACCEL_FILTER_COEF_COUNT] = {2.91464947e-5, 8.74394842e-5, 8.74394842e-5, 2.91464947e-5};
+float accel_filter_coef_a[ACCEL_FILTER_COEF_COUNT] = {1.0000, -2.87435692, 2.75648322, -0.88189312};
 // Частота выборки: 100Hz, частота среза: 2Hz (3 dB)
-float accel_filter_coef_b[ACCEL_FILTER_COEF_COUNT] = {0.00021961, 0.00065882, 0.00065882, 0.00021961};
-float accel_filter_coef_a[ACCEL_FILTER_COEF_COUNT] = {1.0000, -2.74883592, 2.52823137, -0.77763860};
+//float accel_filter_coef_b[ACCEL_FILTER_COEF_COUNT] = {0.00021961, 0.00065882, 0.00065882, 0.00021961};
+//float accel_filter_coef_a[ACCEL_FILTER_COEF_COUNT] = {1.0000, -2.74883592, 2.52823137, -0.77763860};
 // Частота выборки: 100Hz, частота среза: 4Hz (3 dB)
 //float accel_filter_coef_b[ACCEL_FILTER_COEF_COUNT] = {0.0015669, 0.00470072, 0.00470072, 0.0015669};
 //float accel_filter_coef_a[ACCEL_FILTER_COEF_COUNT] = {1.0000, -2.498444, 2.115114, -0.6040692};
@@ -305,8 +305,8 @@ void loop()
   ay_avg = butterworth_filter(ay_c, ACCEL_FILTER_COEF_COUNT, accel_filter_coef_b, accel_filter_coef_a, 
                               ay_filter_input, ay_filter_output);
   // ФВЧ
-  ay_avg = butterworth_filter(ay_avg, ACCEL_HPF_FILTER_COEF_COUNT, accel_hpf_filter_coef_b, accel_hpf_filter_coef_a, 
-                              ay_hpf_filter_input, ay_hpf_filter_output); 
+  //ay_avg = butterworth_filter(ay_avg, ACCEL_HPF_FILTER_COEF_COUNT, accel_hpf_filter_coef_b, accel_hpf_filter_coef_a, 
+  //                            ay_hpf_filter_input, ay_hpf_filter_output); 
 
   // пороги включения и выключения стоп-сигнала
   //float accel_brake_upper_threshold = -0.2 * analogRead(A0) / 1023.0;
@@ -332,10 +332,10 @@ void loop()
   //Serial.print("\t");
   //Serial.println((String)gx + "\t" + gy + "\t" + gz);
   //Serial.println((String)mx + "\t" + my + "\t" + mz);
-  Serial.println((String)qn[0] + "\t" + qn[1] + "\t" + qn[2] + "\t" + qn[3]);
+  //Serial.println((String)qn[0] + "\t" + qn[1] + "\t" + qn[2] + "\t" + qn[3]);
 
   //Serial.println((String)ax_c + "\t" + ay_c + "\t" + az_c);
-  //Serial.println((String)ay + "\t" + ay_c + "\t" + ay_avg);
+  Serial.println((String)ay + "\t" + ay_c + "\t" + ay_avg);
 
 /*
   Serial.print("X: \t");

@@ -75,48 +75,41 @@ uint32_t deltat_orig;
 uint32_t lastUpdate = 0;      // used to calculate integration interval
 uint32_t Now = 0; // used to calculate integration interval
 
-float *qn;
+float *qn;   //[4];
+char qn_str[4][10];
 
 // фильтр Баттерворта 3-го порядка
 // y(n) = b0*x(n) + b1*x(n-1) + b2*x(n-2) + b3*x(n-3) - a1*y(n-1) - a2*y(n-2) - a3*y(n-3))
 // Расчет: https://www.meme.net.au/butterworth.html
 
-// фильтр для ускорения
+// ФНЧ для ускорения
 #define ACCEL_FILTER_COEF_COUNT 4
 // Частота выборки: 100Hz, частота среза: 1Hz (3 dB)
-//float accel_filter_coef_b[ACCEL_FILTER_COEF_COUNT] = {2.91464947e-5, 8.74394842e-5, 8.74394842e-5, 2.91464947e-5};
-//float accel_filter_coef_a[ACCEL_FILTER_COEF_COUNT] = {1.0000, -2.87435692, 2.75648322, -0.88189312};
+float accel_filter_coef_b[ACCEL_FILTER_COEF_COUNT] = {2.91464947e-5, 8.74394842e-5, 8.74394842e-5, 2.91464947e-5};
+float accel_filter_coef_a[ACCEL_FILTER_COEF_COUNT] = {1.0000, -2.87435692, 2.75648322, -0.88189312};
 // Частота выборки: 100Hz, частота среза: 2Hz (3 dB)
-float accel_filter_coef_b[ACCEL_FILTER_COEF_COUNT] = {0.00021961, 0.00065882, 0.00065882, 0.00021961};
-float accel_filter_coef_a[ACCEL_FILTER_COEF_COUNT] = {1.0000, -2.74883592, 2.52823137, -0.77763860};
+//float accel_filter_coef_b[ACCEL_FILTER_COEF_COUNT] = {0.00021961, 0.00065882, 0.00065882, 0.00021961};
+//float accel_filter_coef_a[ACCEL_FILTER_COEF_COUNT] = {1.0000, -2.74883592, 2.52823137, -0.77763860};
 // Частота выборки: 100Hz, частота среза: 4Hz (3 dB)
 //float accel_filter_coef_b[ACCEL_FILTER_COEF_COUNT] = {0.0015669, 0.00470072, 0.00470072, 0.0015669};
 //float accel_filter_coef_a[ACCEL_FILTER_COEF_COUNT] = {1.0000, -2.498444, 2.115114, -0.6040692};
 
 // Частота выборки: 20Hz, частота среза: 1Hz (3 dB)
-//float accel_filter_coef_b[ACCEL_FILTER_COEF_COUNT] = {0.00289855, 0.00869565, 0.00869565, 0.00289855};
-//float accel_filter_coef_a[ACCEL_FILTER_COEF_COUNT] = {1.0,       -2.37391304, 1.92753623,-0.53043478};
-
+//float accel_filter_coef_b[ACCEL_FILTER_COEF_COUNT] = {0.00289855, 0.00869565, 0.00869565,  0.00289855};
+//float accel_filter_coef_a[ACCEL_FILTER_COEF_COUNT] = {1.0,       -2.37391304, 1.92753623, -0.53043478};
 // Частота выборки: 20Hz, частота среза: 2Hz (3 dB)
-//float accel_filter_coef_b[ACCEL_FILTER_COEF_COUNT] = {0.01818181, 0.05454545, 0.05454545, 0.01818181};
-//float accel_filter_coef_a[ACCEL_FILTER_COEF_COUNT] = {1.0,       -1.76363636, 1.18181818,-0.27272727};
+//float accel_filter_coef_b[ACCEL_FILTER_COEF_COUNT] = {0.01818181, 0.05454545, 0.05454545,  0.01818181};
+//float accel_filter_coef_a[ACCEL_FILTER_COEF_COUNT] = {1.0,       -1.76363636, 1.18181818, -0.27272727};
+
+// Частота выборки: 10Hz, частота среза: 2Hz (3 dB)
+//float accel_filter_coef_b[ACCEL_FILTER_COEF_COUNT] = {0.09853188, 0.29559563, 0.29559563,  0.09853188};
+//float accel_filter_coef_a[ACCEL_FILTER_COEF_COUNT] = {1.0,       -0.57719972, 0.42181496, -0.05626170};
+// Частота выборки: 10Hz, частота среза: 1Hz (3 dB)
+//float accel_filter_coef_b[ACCEL_FILTER_COEF_COUNT] = {0.01809889, 0.05429668, 0.05429668,  0.01809889};
+//float accel_filter_coef_a[ACCEL_FILTER_COEF_COUNT] = {1.0,       -1.76004488, 1.18288931, -0.27805328};
 
 float ay_filter_input[ACCEL_FILTER_COEF_COUNT] = {0, 0, 0, 0};
 float ay_filter_output[ACCEL_FILTER_COEF_COUNT] = {0, 0, 0, 0};
-
-#define ACCEL_HPF_FILTER_COEF_COUNT 4
-// ФВЧ, частота выборки: 20Нz, частота среза 0.5Hz (3dB)
-//float accel_hpf_filter_coef_b[ACCEL_HPF_FILTER_COEF_COUNT] = {0.85470085, -2.56410256, 2.56410256, -0.85470085};
-//float accel_hpf_filter_coef_a[ACCEL_HPF_FILTER_COEF_COUNT] = {1.0,        -2.68717948, 2.42051282, -0.72991452};
-// ФВЧ, частота выборки: 100Нz, частота среза 0.5Hz (3dB)
-//float accel_hpf_filter_coef_b[ACCEL_HPF_FILTER_COEF_COUNT] = {0.96899225, -2.90697674, 2.90697674, -0.96899225};
-//float accel_hpf_filter_coef_a[ACCEL_HPF_FILTER_COEF_COUNT] = {1.0,        -2.93701550, 2.87596899, -0.93895349};
-// ФВЧ, частота выборки: 100Нz, частота среза 1Hz (3dB)
-float accel_hpf_filter_coef_b[ACCEL_HPF_FILTER_COEF_COUNT] = {0.93896714, -2.81690141, 2.81690141, -0.93896713};
-float accel_hpf_filter_coef_a[ACCEL_HPF_FILTER_COEF_COUNT] = {1.0,        -2.87417840, 2.75586854, -0.88169014};
-
-float ay_hpf_filter_input[ACCEL_FILTER_COEF_COUNT] = {0, 0, 0, 0};
-float ay_hpf_filter_output[ACCEL_FILTER_COEF_COUNT] = {0, 0, 0, 0};
 
 // фильтр для компенсации склонов/подъемов
 // Частота выборки: 100Hz, частота среза: 0.1Hz (3 dB)
@@ -128,19 +121,24 @@ float ay_hpf_filter_output[ACCEL_FILTER_COEF_COUNT] = {0, 0, 0, 0};
 //float gravity_filter_coef_b[GRAVITY_FILTER_COEF_COUNT] = {0.00002915, 0.00008744, 0.00008744, 0.00002915};
 //float gravity_filter_coef_a[GRAVITY_FILTER_COEF_COUNT] = {1.0000, -2.8744, 2.7565, -0.8819};
 
-// Частота выборки: 20Hz, частота среза: 0.5Hz (3 dB)
-//#define GRAVITY_FILTER_COEF_COUNT 4
-//float gravity_filter_coef_b[GRAVITY_FILTER_COEF_COUNT] = {4.16666666e-4, 0.00125, 0.00125, 4.16666666e-4};
-//float gravity_filter_coef_a[GRAVITY_FILTER_COEF_COUNT] = {1.0, -2.68666666, 2.42, -0.73};
+// ФВЧ для ускорения
+#define ACCEL_HPF_FILTER_COEF_COUNT 4
+// Частота выборки: 20Нz, частота среза 0.5Hz (3dB)
+//float accel_hpf_filter_coef_b[ACCEL_HPF_FILTER_COEF_COUNT] = {0.85470085, -2.56410256, 2.56410256, -0.85470085};
+//float accel_hpf_filter_coef_a[ACCEL_HPF_FILTER_COEF_COUNT] = {1.0,        -2.68717948, 2.42051282, -0.72991452};
+// Частота выборки: 100Нz, частота среза 0.5Hz (3dB)
+//float accel_hpf_filter_coef_b[ACCEL_HPF_FILTER_COEF_COUNT] = {0.96899225, -2.90697674, 2.90697674, -0.96899225};
+//float accel_hpf_filter_coef_a[ACCEL_HPF_FILTER_COEF_COUNT] = {1.0,        -2.93701550, 2.87596899, -0.93895349};
+// Частота выборки: 100Нz, частота среза 1Hz (3dB)
+//float accel_hpf_filter_coef_b[ACCEL_HPF_FILTER_COEF_COUNT] = {0.93896714, -2.81690141, 2.81690141, -0.93896713};
+//float accel_hpf_filter_coef_a[ACCEL_HPF_FILTER_COEF_COUNT] = {1.0,        -2.87417840, 2.75586854, -0.88169014};
 
-//float ay_g_filter_input[GRAVITY_FILTER_COEF_COUNT] = {0, 0, 0, 0};
-//float ay_g_filter_output[GRAVITY_FILTER_COEF_COUNT] = {0, 0, 0, 0};
-//float az_g_filter_input[GRAVITY_FILTER_COEF_COUNT] = {0, 0, 0, 0};
-//float az_g_filter_output[GRAVITY_FILTER_COEF_COUNT] = {0, 0, 0, 0};
+float ay_hpf_filter_input[ACCEL_FILTER_COEF_COUNT] = {0, 0, 0, 0};
+float ay_hpf_filter_output[ACCEL_FILTER_COEF_COUNT] = {0, 0, 0, 0};
 
 MPU9250_DMP imu;
 File f;
-char row[80];
+char row[200];
 
 void setup() 
 {
@@ -164,7 +162,7 @@ void setup()
   display.display();
   #endif
 
-  delay(3000);
+  delay(10000);
 
   // Call imu.begin() to verify communication and initialize
   if (imu.begin() != INV_SUCCESS) {
@@ -200,7 +198,7 @@ void setup()
   }
   Serial.println("card initialized.");
 
-  f = SD.open("test2.txt");
+  f = SD.open("MPU_DMP.TXT");
   
 }
 
@@ -220,7 +218,9 @@ void loop()
     }
   }
   //Serial.println(String(row));
-  sscanf(row, "%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d", &imu_ax, &imu_ay, &imu_az, &imu_gx, &imu_gy, &imu_gz, &imu_mx, &imu_my, &imu_mz, &deltat_orig);
+  sscanf(row, "%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d", 
+              &imu_ax, &imu_ay, &imu_az, &imu_gx, &imu_gy, &imu_gz, &imu_mx, &imu_my, &imu_mz, 
+              /*qn_str[0], qn_str[1], qn_str[2], qn_str[3], */ &deltat_orig);
   delayMicroseconds(deltat_orig);
  
   // получаем значения от акселя
@@ -237,15 +237,19 @@ void loop()
   mx = imu.calcMag(imu_mx);
   my = imu.calcMag(imu_my); 
   mz = imu.calcMag(imu_mz);
+
+  // получаем значения для кватерниона
+//  qn[0] = atof(qn_str[0]);
+//  qn[1] = atof(qn_str[1]);
+//  qn[2] = atof(qn_str[2]);
+//  qn[3] = atof(qn_str[3]);
   
-  Now = micros();
-  deltat = ((Now - lastUpdate) / 1000000.0f); // set integration time by time elapsed since last filter update
-  lastUpdate = Now;
+  deltat = deltat_orig / 1000000.0f; // set integration time by time elapsed since last filter update
   sum += deltat; // sum for averaging filter update rate
   sumCount++;
 
   // вычисляем кватернион положения относительно Земли
-//  MahonyQuaternionUpdate(
+//  MahonyQuaternionUpdate( 
 //  ax,                ay,                  az,
 //  gx * DEG_TO_RAD,   gy * DEG_TO_RAD,     gz * DEG_TO_RAD,
 //  my,                mx,                  -mz,
@@ -259,6 +263,7 @@ void loop()
   );
 
   qn = (float *)getQ();
+
   Quaternion q1(qn[0], qn[1], qn[2], qn[3]);       // кватернион
   Quaternion q1_(qn[0], -qn[1], -qn[2], -qn[3]);   // обратный кватернион
 
@@ -283,8 +288,8 @@ void loop()
   ay_avg = butterworth_filter(ay_c, ACCEL_FILTER_COEF_COUNT, accel_filter_coef_b, accel_filter_coef_a, 
                               ay_filter_input, ay_filter_output);
   // ФВЧ
-  ay_avg = butterworth_filter(ay_avg, ACCEL_HPF_FILTER_COEF_COUNT, accel_hpf_filter_coef_b, accel_hpf_filter_coef_a, 
-                              ay_hpf_filter_input, ay_hpf_filter_output); 
+  //ay_avg = butterworth_filter(ay_avg, ACCEL_HPF_FILTER_COEF_COUNT, accel_hpf_filter_coef_b, accel_hpf_filter_coef_a, 
+  //                            ay_hpf_filter_input, ay_hpf_filter_output); 
 
   // пороги включения и выключения стоп-сигнала
   //float accel_brake_upper_threshold = -0.2 * analogRead(A0) / 1023.0;
@@ -310,7 +315,8 @@ void loop()
   //Serial.print((String)imu_gx + "\t" + imu_gy + "\t" + imu_gz + "\t");
   //Serial.print((String)imu_mx + "\t" + imu_my + "\t" + imu_mz + "\t");
   //Serial.println((String)deltat_orig + "\t" + deltat);
-  //Serial.println((String)qn[0] + "\t" + qn[1] + "\t" + qn[2] + "\t" + qn[3]);
+  //Serial.println((String)qn_str[0] + "\t" + qn_str[1] + "\t" + qn_str[2] + "\t" + qn_str[3]);
+  //Serial.print((String)qn[0] + "\t" + qn[1] + "\t" + qn[2] + "\t" + qn[3] + "\t");
 
   //Serial.println((String)ax + "\t" + ay + "\t" + az);
   Serial.println((String)ay + "\t" + ay_c + "\t" + ay_avg);

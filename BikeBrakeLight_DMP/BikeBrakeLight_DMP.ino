@@ -33,8 +33,10 @@ uint32_t accel_last_activity_ts;
 #define ACCEL_WAKE_ON_THRESHOLD 100
 // продолжительность применения ускорений, мс
 #define ACCEL_WAKE_ON_DURATION 1
-// частота выборки для акселя в режиме Low Power
+// частота выборки для акселя в режиме Low Power, Гц
 #define ACCEL_WAKE_ON_FREQ 2    // 2 - 1.95 Гц, 4 - 3.91 Гц ?
+// частота выборки для режима DMP, Гц
+#define DMP_FIFO_RATE 50
 
 // текущие значения от акселя, гиро и мага
 float ax = 0, ay = 0, az = 0;
@@ -61,11 +63,10 @@ float mx_scale = 1.0;
 float my_scale = 1.5;
 float mz_scale = 0.80;
 
-//uint32_t delt_t = 0;                           // used to control display output rate
-uint32_t count = 0, sumCount = 0;                // used to control display output rate
-float deltat = 0.0f, sum = 0.0f;                 // integration interval for both filter schemes
-uint32_t lastUpdate = 0;      // used to calculate integration interval
-uint32_t Now = 0; // used to calculate integration interval
+uint32_t cycle_count = 0;                    // used to control display output rate
+float delta_t = 0.0f, delta_t_avg = 0.0f;    // integration interval for both filter schemes
+uint32_t last_update_t = 0;                  // used to calculate integration interval
+uint32_t Now = 0;                            
 
 float qn[4];
 
@@ -73,7 +74,7 @@ float qn[4];
 // y(n) = b0*x(n) + b1*x(n-1) + b2*x(n-2) + b3*x(n-3) - a1*y(n-1) - a2*y(n-2) - a3*y(n-3))
 // Расчет: https://www.meme.net.au/butterworth.html
 
-// фильтр для ускорения
+// ФНЧ для ускорения
 #define ACCEL_FILTER_COEF_COUNT 4
 // Частота выборки: 100Hz, частота среза: 1Hz (3 dB)
 //float accel_filter_coef_b[ACCEL_FILTER_COEF_COUNT] = {2.91464947e-5, 8.74394842e-5, 8.74394842e-5, 2.91464947e-5};
@@ -86,31 +87,38 @@ float qn[4];
 //float accel_filter_coef_a[ACCEL_FILTER_COEF_COUNT] = {1.0000, -2.498444, 2.115114, -0.6040692};
 
 // Частота выборки: 20Hz, частота среза: 1Hz (3 dB)
-//float accel_filter_coef_b[ACCEL_FILTER_COEF_COUNT] = {0.00289855, 0.00869565, 0.00869565, 0.00289855};
-//float accel_filter_coef_a[ACCEL_FILTER_COEF_COUNT] = {1.0,       -2.37391304, 1.92753623,-0.53043478};
-
+//float accel_filter_coef_b[ACCEL_FILTER_COEF_COUNT] = {0.00289855, 0.00869565, 0.00869565,  0.00289855};
+//float accel_filter_coef_a[ACCEL_FILTER_COEF_COUNT] = {1.0,       -2.37391304, 1.92753623, -0.53043478};
 // Частота выборки: 20Hz, частота среза: 2Hz (3 dB)
-float accel_filter_coef_b[ACCEL_FILTER_COEF_COUNT] = {0.01818181, 0.05454545, 0.05454545, 0.01818181};
-float accel_filter_coef_a[ACCEL_FILTER_COEF_COUNT] = {1.0,       -1.76363636, 1.18181818,-0.27272727};
+//float accel_filter_coef_b[ACCEL_FILTER_COEF_COUNT] = {0.01818181, 0.05454545, 0.05454545,  0.01818181};
+//float accel_filter_coef_a[ACCEL_FILTER_COEF_COUNT] = {1.0,       -1.76363636, 1.18181818, -0.27272727};
+
+// Частота выборки: 10Hz, частота среза: 2Hz (3 dB)
+//float accel_filter_coef_b[ACCEL_FILTER_COEF_COUNT] = {0.09853188, 0.29559563, 0.29559563,  0.09853188};
+//float accel_filter_coef_a[ACCEL_FILTER_COEF_COUNT] = {1.0,       -0.57719972, 0.42181496, -0.05626170};
+// Частота выборки: 10Hz, частота среза: 1Hz (3 dB)
+float accel_filter_coef_b[ACCEL_FILTER_COEF_COUNT] = {0.01809889, 0.05429668, 0.05429668,  0.01809889};
+float accel_filter_coef_a[ACCEL_FILTER_COEF_COUNT] = {1.0,       -1.76004488, 1.18288931, -0.27805328};
 
 float ay_filter_input[ACCEL_FILTER_COEF_COUNT] = {0, 0, 0, 0};
 float ay_filter_output[ACCEL_FILTER_COEF_COUNT] = {0, 0, 0, 0};
 
+// ФВЧ для ускорения
 #define ACCEL_HPF_FILTER_COEF_COUNT 4
-// ФВЧ, частота выборки: 20Нz, частота среза 0.5Hz (3dB)
+// Частота выборки: 20Нz, частота среза 0.5Hz (3dB)
 float accel_hpf_filter_coef_b[ACCEL_HPF_FILTER_COEF_COUNT] = {0.85470085, -2.56410256, 2.56410256, -0.85470085};
 float accel_hpf_filter_coef_a[ACCEL_HPF_FILTER_COEF_COUNT] = {1.0,        -2.68717948, 2.42051282, -0.72991452};
-// ФВЧ, частота выборки: 100Нz, частота среза 0.5Hz (3dB)
+// Частота выборки: 100Нz, частота среза 0.5Hz (3dB)
 //float accel_hpf_filter_coef_b[ACCEL_HPF_FILTER_COEF_COUNT] = {0.96899225, -2.90697674, 2.90697674, -0.96899225};
 //float accel_hpf_filter_coef_a[ACCEL_HPF_FILTER_COEF_COUNT] = {1.0,        -2.93701550, 2.87596899, -0.93895349};
-// ФВЧ, частота выборки: 100Нz, частота среза 1Hz (3dB)
+// Частота выборки: 100Нz, частота среза 1Hz (3dB)
 //float accel_hpf_filter_coef_b[ACCEL_HPF_FILTER_COEF_COUNT] = {0.93896714, -2.81690141, 2.81690141, -0.93896713};
 //float accel_hpf_filter_coef_a[ACCEL_HPF_FILTER_COEF_COUNT] = {1.0,        -2.87417840, 2.75586854, -0.88169014};
 
 float ay_hpf_filter_input[ACCEL_FILTER_COEF_COUNT] = {0, 0, 0, 0};
 float ay_hpf_filter_output[ACCEL_FILTER_COEF_COUNT] = {0, 0, 0, 0};
 
-// фильтр для компенсации склонов/подъемов
+// ФНЧ для компенсации склонов/подъемов
 // Частота выборки: 100Hz, частота среза: 0.1Hz (3 dB)
 //#define GRAVITY_FILTER_COEF_COUNT 3
 //float gravity_filter_coef_b[GRAVITY_FILTER_COEF_COUNT] = {9.8259e-06, 1.9652e-05, 9.8259e-06};
@@ -157,39 +165,16 @@ void setup()
 
   delay(3000);
 
-  // Call imu.begin() to verify communication and initialize
-  if (imu.begin() != INV_SUCCESS)
-  {
-    while (1)
-    {
-      #ifdef DEBUG
-      Serial.println("Unable to communicate with MPU-9250");
-      Serial.println();
-      #endif
+  // запускаем MPU
+  MPU_init();
 
-      #ifdef OLED
-      display.setCursor(0, 0);
-      display.println("Unable to communicate with MPU-9250");
-      display.display();
-      #endif
+  // генерация прерываний спадающим импульсом
+  imu.setIntLevel(INT_ACTIVE_LOW);
+  imu.setIntLatched(INT_50US_PULSE);
+  imu.enableInterrupt(1);
 
-      delay(5000);
-    }
-  }
-
-  // запрещаем генерацию прерываний 
-  imu.enableInterrupt(0);
-
-  imu.dmpBegin(DMP_FEATURE_6X_LP_QUAT | // Enable 6-axis quat
-               DMP_FEATURE_GYRO_CAL | // Use gyro calibration
-               DMP_FEATURE_SEND_CAL_GYRO | // Send cal'd gyro values
-               DMP_FEATURE_SEND_RAW_ACCEL,
-              20); // Set DMP FIFO rate to 10 Hz
-  // DMP_FEATURE_LP_QUAT can also be used. It uses the 
-  // accelerometer in low-power mode to estimate quat's.
-  // DMP_FEATURE_LP_QUAT and 6X_LP_QUAT are mutually exclusive
-
-  imu.enableInterrupt();
+  // подвешиваем обработчик по спадающему фронту
+  LowPower.attachInterruptWakeup(INTERRUPT_PIN, dummy, FALLING);
 
 }
 
@@ -201,7 +186,7 @@ void loop()
 
   // Call update() to update the imu objects sensor data.
   // You can specify which sensors to update by combining
-  // UPDATE_acc, UPDATE_GYRO, UPDATE_COMPASS, and/or
+  // UPDATE_ACC, UPDATE_GYRO, UPDATE_COMPASS, and/or
   // UPDATE_TEMPERATURE.
   // (The update function defaults to acc, gyro, compass,
   //  so you don't have to specify these values.)
@@ -224,9 +209,9 @@ void loop()
   ay = imu.calcAccel(imu.ay - ay_offset); 
   az = imu.calcAccel(imu.az - az_offset);
   // средние значения для калибровки
-  ax_cal_avg = (ax_cal_avg * 99 + imu.ax - ax_offset) / 100;
-  ay_cal_avg = (ay_cal_avg * 99 + imu.ay - ay_offset) / 100;
-  az_cal_avg = (az_cal_avg * 99 + imu.az - az_offset) / 100;
+  //ax_cal_avg = (ax_cal_avg * 99 + imu.ax - ax_offset) / 100;
+  //ay_cal_avg = (ay_cal_avg * 99 + imu.ay - ay_offset) / 100;
+  //az_cal_avg = (az_cal_avg * 99 + imu.az - az_offset) / 100;
 
   // получаем кватернион
   qn[0] = imu.calcQuat(imu.qw);
@@ -234,20 +219,24 @@ void loop()
   qn[2] = imu.calcQuat(imu.qy);
   qn[3] = imu.calcQuat(imu.qz);
 
+  // вычисляем дельту t
   Now = micros();
-  deltat = ((Now - lastUpdate) / 1000000.0f); // set integration time by time elapsed since last filter update
-  lastUpdate = Now;
-  sum += deltat; // sum for averaging filter update rate
-  sumCount++;
+  delta_t = ((Now - last_update_t) / 1000000.0f);
+  if (delta_t < 0)
+    // при переполнения micros() используем среднее значение дельты t 
+    delta_t = delta_t_avg;
+  last_update_t = Now;
+  delta_t_avg = (delta_t_avg + delta_t) / 2.0;
+  cycle_count++;
 
   Quaternion q1(qn[0], qn[1], qn[2], qn[3]);       // кватернион
   Quaternion q1_(qn[0], -qn[1], -qn[2], -qn[3]);   // обратный кватернион
 
   // компенсируем гравитацию для акселя
   VectorFloat v_acc(ax, ay, az);     // вектор для акселя
-  v_acc = v_acc.getRotated(&q1);   // поворачиваем его в систему координат Земли
+  v_acc = v_acc.getRotated(&q1);     // поворачиваем его в систему координат Земли
   v_acc.z -= 1;                      // вычитаем гравитацию из значения на оси Z
-  v_acc = v_acc.getRotated(&q1_);  // поворачиваем обратно в систему координат вело
+  v_acc = v_acc.getRotated(&q1_);    // поворачиваем обратно в систему координат вело
 
   // значения для акселя без влияния гравитации
   ax_c = v_acc.x;
@@ -264,8 +253,8 @@ void loop()
   ay_avg = butterworth_filter(ay_c, ACCEL_FILTER_COEF_COUNT, accel_filter_coef_b, accel_filter_coef_a, 
                               ay_filter_input, ay_filter_output);
   // ФВЧ
-  ay_avg = butterworth_filter(ay_avg, ACCEL_HPF_FILTER_COEF_COUNT, accel_hpf_filter_coef_b, accel_hpf_filter_coef_a, 
-                              ay_hpf_filter_input, ay_hpf_filter_output); 
+  //ay_avg = butterworth_filter(ay_avg, ACCEL_HPF_FILTER_COEF_COUNT, accel_hpf_filter_coef_b, accel_hpf_filter_coef_a, 
+  //                            ay_hpf_filter_input, ay_hpf_filter_output); 
 
   // пороги включения и выключения стоп-сигнала
   //float accel_brake_upper_threshold = -0.2 * analogRead(A0) / 1023.0;
@@ -293,7 +282,7 @@ void loop()
   //Serial.println((String)mx + "\t" + my + "\t" + mz);
   Serial.print((String)qn[0] + "\t" + qn[1] + "\t" + qn[2] + "\t" + qn[3]  + "\t");
 
-  Serial.println((String)ax_c + "\t" + ay_c + "\t" + az_c + "\t" + deltat);
+  Serial.println((String)ax_c + "\t" + ay_c + "\t" + az_c);
   //Serial.println((String)ay + "\t" + ay_c + "\t" + ay_avg);
 
 /*
@@ -312,7 +301,7 @@ void loop()
   #endif
   
   #ifdef OLED
-  if (sumCount % 10 == 0) {
+  if (cycle_count % 5 == 0) {
     display.clearDisplay();
     display.setCursor(0, 0);
     display.println((String)((ay_avg < 0)?"-":"+") + (String)abs(ay_avg));
@@ -330,6 +319,123 @@ void loop()
       digitalWrite(LED_BUILTIN, HIGH);     // вЫключаем св.диод на плате
       digitalWrite(STOP_LED_PIN, LOW);     // и стоп-сигнал      
     }
+
+  // проверяем, есть ли активность на акселе
+  if (abs(ax_c) >= INACTIVITY_ACCEL_THRESHOLD || abs(ay_c) >= INACTIVITY_ACCEL_THRESHOLD || abs(az_c) >= INACTIVITY_ACCEL_THRESHOLD /*|| 1 == 1 */) {
+    // активность есть, запоминаем отметку времени
+    accel_last_activity_ts = millis();
+  }
+  else {
+    // активности нет
+
+    // вычисляем продолжительность неактивности
+    float accel_inactivity_t = millis() - accel_last_activity_ts;
+    if (accel_inactivity_t < 0) 
+      // обработка переполнения millis()
+      accel_inactivity_t = 0; 
+      
+    if (accel_inactivity_t > INACTIVITY_BEFORE_SLEEP) {
+      // истек период макс.неактивности
+    
+      // переводим MPU в режим Wake On Motion с указанием:
+      // порога ускорения для просыпания, 
+      // продолжительности применения ускорения в мс,
+      // частоты выборок 
+      if (mpu_lp_motion_interrupt(ACCEL_WAKE_ON_THRESHOLD, ACCEL_WAKE_ON_DURATION, ACCEL_WAKE_ON_FREQ) != INV_SUCCESS) {
+        // ошибка
+        #ifdef DEBUG
+        Serial.println("IMU LP WoM mode failed");
+        #endif
+        #ifdef OLED
+        display.clearDisplay();
+        display.setCursor(0, 0);
+        display.println("IMU LP WoM mode failed");
+        display.display();
+        #endif
+        blinkLED(3, 300, 300);
+      }
+
+      // сигнализируем о переходе в режим сна
+      #ifdef DEBUG
+      Serial.println("Going to sleep mode");
+      #endif
+      #ifdef OLED
+      display.clearDisplay();
+      display.setCursor(0, 0);
+      display.println("Sleep mode");
+      display.display();
+      #endif
+      blinkLED(1, 500, 500);
+      
+      // переводим CPU в режим сна
+      LowPower.sleep();
+
+      // сигнализируем о выходе из режима сна
+      #ifdef DEBUG
+      Serial.println("Waking up");
+      #endif
+      #ifdef OLED
+      display.clearDisplay();
+      display.setCursor(0, 0);
+      display.println("Wake up");
+      display.display();
+      #endif
+      blinkLED(2, 300, 200);
+
+      // перезапускаем MPU
+      MPU_init();
+
+      // начинаем заново отсчет неактивности
+      accel_last_activity_ts = millis();
+    }
+  }
+}
+
+// инициализация MPU
+int MPU_init(){
+
+  // перезапускаем MPU в обычном режиме 
+  if (imu.begin() != INV_SUCCESS) {
+    #ifdef DEBUG
+    Serial.println("Error init IMU");
+    #endif
+    #ifdef OLED
+    display.clearDisplay();
+    display.setCursor(0, 0);
+    display.println("Error init IMU");
+    display.display();
+    #endif
+    blinkLED(3, 300, 300);
+    return INV_ERROR;
+  }
+
+  if (imu.dmpBegin(DMP_FEATURE_6X_LP_QUAT |       // Enable 6-axis quat
+                   DMP_FEATURE_GYRO_CAL |             // Use gyro calibration
+                   DMP_FEATURE_SEND_CAL_GYRO |        // Send cal'd gyro values
+                   DMP_FEATURE_SEND_RAW_ACCEL,
+                   DMP_FIFO_RATE) != INV_SUCCESS) {   // Set DMP FIFO rate 
+    #ifdef DEBUG
+    Serial.println("Error DMP mode on");
+    #endif
+    #ifdef OLED
+    display.clearDisplay();
+    display.setCursor(0, 0);
+    display.println("Error DMP mode on");
+    display.display();
+    #endif
+    blinkLED(3, 300, 300);
+    return INV_ERROR;
+  }
+
+  imu.setGyroFSR(1000); // Set gyro to 1000 dps
+  imu.setAccelFSR(4);   // Set acc to +/-4g
+  //imu.setLPF(5);
+  //imu.setSampleRate(10);
+  
+  // установленные значения LPF и SampleRate
+  #ifdef DEBUG
+  Serial.println((String)imu.getLPF() + "\t" + imu.getSampleRate() + "\t" + imu.getCompassSampleRate());
+  #endif
 }
 
 // фильтр Баттерворта
