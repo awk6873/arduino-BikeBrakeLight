@@ -1,0 +1,119 @@
+/// Solution ID: 68659_Brake-2022-09-29 | 2022-10-01T06:27:56Z ///
+
+#ifndef NEUTON_MODEL_MODEL_H
+#define NEUTON_MODEL_MODEL_H
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+/* Model info */
+#define NEUTON_MODEL_HEADER_VERSION 3
+#define NEUTON_MODEL_QLEVEL 32
+#define NEUTON_MODEL_FLOAT_SUPPORT 1
+#define NEUTON_MODEL_TASK_TYPE 1  // binary classification
+#define NEUTON_MODEL_NEURONS_COUNT 7
+#define NEUTON_MODEL_WEIGHTS_COUNT 43
+#define NEUTON_MODEL_INPUTS_COUNT 414
+#define NEUTON_MODEL_INPUTS_COUNT_ORIGINAL 6
+#define NEUTON_MODEL_INPUT_LIMITS_COUNT 414
+#define NEUTON_MODEL_OUTPUTS_COUNT 2
+#define NEUTON_MODEL_LOG_SCALE_OUTPUTS 0
+#define NEUTON_MODEL_HAS_CLASSES_RATIO 0
+#define NEUTON_MODEL_HAS_NEGPOS_RATIO 0
+
+/* Preprocessing */
+#define NEUTON_PREPROCESSING_ENABLED 1
+#define NEUTON_MODEL_WINDOW_SIZE 50
+#define NEUTON_DROP_ORIGINAL_FEATURES 0
+#define NEUTON_BITMASK_ENABLED 1
+#define NEUTON_INPUTS_IS_INTEGER 0
+#define NEUTON_MODEL_SA_PRECISION 24
+
+/* Types */
+typedef float input_t;
+typedef float extracted_feature_t;
+typedef float coeff_t;
+typedef float weight_t;
+typedef float acc_signed_t;
+typedef float acc_unsigned_t;
+typedef uint16_t sources_size_t;
+typedef uint8_t weights_size_t;
+typedef uint8_t neurons_size_t;
+
+/* Scaling */
+static const input_t modelInputScaleMin[] = {
+	-32868, -11610, -17840, -2195, -2288, -4943 };
+static const input_t modelInputScaleMax[] = {
+	32667, 16578, 32467, 1904, 4133, 3752 };
+
+static const extracted_feature_t extractedFeaturesScaleMin[] = {
+	62.25, 3.375, -3372.48, -2720, -32868, 1.002041, 686.48969, 26.200949,
+	-4.5908403, -1.3060684, 1, 0, 1, 86024.531, 1, 74659.875, 1, 72929.586,
+	1, 66.25, 3.375, -3396.1599, -2626, -11610, 1.002041, 699.67383, 26.451349,
+	-3.8903027, -1.473509, 1, 0, 0, 110387.97, 1, 93312.172, 1, 70369.828,
+	1, 96.25, 5.25, 6865.9199, 7896, -17840, 1.0060995, 1418.8549, 37.66769,
+	-3.417237, -1.2231461, 3, 1, 2, 245225.78, 1, 191224.14, 1, 153759.3, 1,
+	2.46875, 0.15625, -949.47998, -644, -2195, 1.002041, 1.3044003, 1.1421034,
+	-2.4231508, -1.8235698, 1, 0, 0, 178.69052, 1, 169.16118, 1, 121.37892,
+	1, 2.15625, 0.125, -583.08002, -441, -2288, 1.002041, 1.2000002, 1.0954452,
+	-3.0114758, -1.6950868, 1, 0, 0, 178.0743, 1, 152.71837, 1, 89.236404,
+	1, 2.09375, 0.125, -2279.3, -1516, -4943, 1.002041, 0.86440033, 0.92973131,
+	-2.2354085, -1.819387, 1, 0, 0, 175.81119, 1, 127.8712, 1, 60.375381, 1 };
+static const extracted_feature_t extractedFeaturesScaleMax[] = {
+	58463.25, 2892.8438, 1990.54, 32667, 1140, 1.0763903, 1.0215491e+08, 10107.171,
+	2.4833031, 26.04744, 40, 20, 20, 6.0199227e+10, 31, 2.7481991e+10, 31,
+	1.3257732e+10, 31, 14581.375, 2258.625, 2389.2, 16578, 1714, 1.0727904,
+	16712806, 4088.1299, 5.6691594, 34.382149, 38, 19, 19, 6.5781105e+09, 31,
+	3.172298e+09, 31, 1.6539899e+09, 31, 43129.375, 2561.5, 11233.36, 32467,
+	7980, 1.0655304, 90720648, 9524.7383, 5.7287312, 35.436211, 34, 17, 17,
+	4.8503562e+10, 31, 2.5046473e+10, 31, 1.0881735e+10, 31, 2809.125, 1022,
+	1038.84, 1904, 565, 1.0600307, 938592.5, 968.80981, 2.2725422, 5.9988527,
+	31, 15, 16, 9.5013024e+08, 31, 64638136, 31, 42547892, 31, 3816.75, 1016.5,
+	911.84003, 4133, 556, 1.0581868, 2156698, 1468.5701, 3.2142777, 13.614614,
+	30, 15, 15, 1.2288105e+09, 31, 2.0078837e+08, 30, 1.5463547e+08, 31, 2844.5,
+	2914.5, 2566.3999, 3752, 1644, 1.0600307, 6116079.5, 2473.0708, 4.8010187,
+	26.375446, 31, 16, 15, 8.3961165e+09, 31, 2.3091114e+08, 31, 83887072,
+	31 };
+
+/* Limits */
+static const uint8_t modelUsedInputsMask[] = {
+	0x00, 0x40, 0x00, 0x00, 0x01, 0x10, 0x00, 0x00, 0x08, 0x00, 0x21, 0x00,
+	0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x84, 0x01, 0x04, 0x00, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0x00,
+	0x00, 0x40, 0x42, 0x01, 0x04, 0x00, 0x00, 0x00, 0x48, 0x00, 0x10, 0x00,
+	0x00, 0x00, 0x88, 0x00 };
+
+/* Structure */
+static const weight_t modelWeights[] = {
+	-0.061106022, 0.89402378, 0.76571673, -0.97070301, 0.99998093, 0.31014615,
+	-0.25723267, 0.39502132, -0.64811021, 0.60646987, 0.21223518, -0.25119081,
+	1, -0.10651112, -0.75254291, -0.26473868, -0.34878975, 0.24704997, 0.1589499,
+	-0.99999994, 0.23146057, -0.27617484, 0.90636837, -0.40271229, -0.24052598,
+	-0.383131, -0.99999988, 0.55600357, -0.68498397, 0.53599298, -0.039869342,
+	-0.14192328, -0.12431465, 0.38106415, 0.99992466, -0.33950177, 0.49945438,
+	-0.33878466, -0.47098541, 0.53196645, -0.54337472, 0.99999344, -0.010519521 };
+
+static const sources_size_t modelLinks[] = {
+	44, 67, 96, 302, 322, 407, 414, 0, 32, 199, 224, 305, 372, 414, 80, 200,
+	226, 302, 312, 372, 414, 0, 2, 85, 210, 310, 403, 414, 1, 3, 414, 3, 14,
+	97, 194, 274, 355, 358, 414, 0, 2, 5, 414 };
+
+static const weights_size_t modelIntLinksBoundaries[] = {
+	0, 8, 14, 23, 30, 32, 42 };
+static const weights_size_t modelExtLinksBoundaries[] = {
+	7, 14, 21, 28, 31, 39, 43 };
+
+static const coeff_t modelFuncCoeffs[] = {
+	25.037457, 24.021978, 32.518677, 30.024988, 8.4620428, 39.999966, 12.990678 };
+static const uint8_t modelFuncTypes[] = { 0, 0, 0, 0, 0, 0, 0 };
+
+static const neurons_size_t modelOutputNeurons[] = { 6, 4 };
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // NEUTON_MODEL_MODEL_H
+

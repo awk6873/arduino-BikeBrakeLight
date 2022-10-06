@@ -51,9 +51,18 @@ https://github.com/MartinBloedorn/libFilter
 
 
 ML
+https://www.macnica.co.jp/business/ai_iot/columns/135112
 https://towardsdatascience.com/tinyml-slope-control-for-robots-with-arduino-pro-b2bca81e939e
 https://www.hackster.io/kate-vasilenko/tiny-ml-air-writing-recognition-with-nicla-sense-me-ae6a11
 https://neuton.ai
 https://blog.tensorflow.org/2021/05/building-tinyml-application-with-tf-micro-and-sensiml.html
 https://sensiml.com/
+https://studio.edgeimpulse.com/
+https://www.hackster.io/news/tinyml-for-all-developers-with-edge-impulse-2cfbbcc14b90
+https://forum.edgeimpulse.com/t/deployment-of-model-on-xiao-ble-sense-6-axis-imu/4404
 
+https://github.com/tensorflow/tensorflow/tree/be4f6874533d78f662d9777b66abe3cdde98f901/tensorflow/lite/experimental/micro/examples
+https://keras.io/examples/timeseries/timeseries_classification_from_scratch/
+https://github.com/keras-team/keras-tuner
+
+https://eloquentarduino.github.io/2021/03/tinyml-classification-example-wine-dataset/

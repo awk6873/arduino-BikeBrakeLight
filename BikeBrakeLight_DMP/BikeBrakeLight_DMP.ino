@@ -115,8 +115,8 @@ float accel_hpf_filter_coef_a[ACCEL_HPF_FILTER_COEF_COUNT] = {1.0,        -2.687
 //float accel_hpf_filter_coef_b[ACCEL_HPF_FILTER_COEF_COUNT] = {0.93896714, -2.81690141, 2.81690141, -0.93896713};
 //float accel_hpf_filter_coef_a[ACCEL_HPF_FILTER_COEF_COUNT] = {1.0,        -2.87417840, 2.75586854, -0.88169014};
 
-float ay_hpf_filter_input[ACCEL_FILTER_COEF_COUNT] = {0, 0, 0, 0};
-float ay_hpf_filter_output[ACCEL_FILTER_COEF_COUNT] = {0, 0, 0, 0};
+float ay_hpf_filter_input[ACCEL_HPF_FILTER_COEF_COUNT] = {0, 0, 0, 0};
+float ay_hpf_filter_output[ACCEL_HPF_FILTER_COEF_COUNT] = {0, 0, 0, 0};
 
 // ФНЧ для компенсации склонов/подъемов
 // Частота выборки: 100Hz, частота среза: 0.1Hz (3 dB)
