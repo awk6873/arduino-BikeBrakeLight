@@ -24,7 +24,8 @@ const int chipSelectPin = 3;
 // для магнитометра - константа +/- 4912 uT (micro-tesla)
 
 // множитель перевода значений в целые
-#define INT_MULTIPLIER 10000
+#define ACCEL_INT_MULTIPLIER 1000
+#define GYRO_INT_MULTIPLIER 100
 
 // текущие значения от акселя, гиро и мага
 float ax = 0, ay = 0, az = 0;
@@ -178,9 +179,9 @@ void loop()
     digitalWrite(LED_BUILTIN, HIGH);
     
   sprintf(rows[sumCount++ % 300], "%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d",
-          (int)(ax * INT_MULTIPLIER),   (int)(ay * INT_MULTIPLIER),   (int)(az * INT_MULTIPLIER), 
-          (int)(ax_c * INT_MULTIPLIER), (int)(ay_c * INT_MULTIPLIER), (int)(az_c * INT_MULTIPLIER),
-          (int)(gx * INT_MULTIPLIER),   (int)(gy * INT_MULTIPLIER),   (int)(gz * INT_MULTIPLIER), 
+          (int)(ax * ACCEL_INT_MULTIPLIER),   (int)(ay * ACCEL_INT_MULTIPLIER),   (int)(az * ACCEL_INT_MULTIPLIER), 
+          (int)(ax_c * ACCEL_INT_MULTIPLIER), (int)(ay_c * ACCEL_INT_MULTIPLIER), (int)(az_c * ACCEL_INT_MULTIPLIER),
+          (int)(gx * GYRO_INT_MULTIPLIER),   (int)(gy * GYRO_INT_MULTIPLIER),   (int)(gz * GYRO_INT_MULTIPLIER), 
           brake_state);
 
   if (sumCount % 300 == 0) {
