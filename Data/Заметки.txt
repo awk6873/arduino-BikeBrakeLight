@@ -1,0 +1,17 @@
+Наборы данных
+1.2022-09-22 
+100 Гц
+ax,ay,az,gx,gy,gz,mx,my,mz,delta_t
+
+2.2022-09-27 
+100 Гц
+ax,ay,az,gx,gy,gz,mx,my,mz,delta_t
+
+2.2022-09-29 
+100 Гц
+ax,ay,az,gx,gy,gz,mx,my,mz,delta_t,brake
+
+3.2022-10-07 
+76 Гц, фильтр 42 Гц, компенсация наклона
+Множители: accel - 10000, gyro - 100, в подготовленном для AI: accel - 1000, gyro - 1
+ax,ay,az,ax_c,ay_c,az_c,gx,gy,gz,brake
