@@ -1,11 +1,7 @@
 Наборы данных
-1.2022-09-22 
+1.2022-09-27 
 100 Гц
-ax,ay,az,gx,gy,gz,mx,my,mz,delta_t
-
-2.2022-09-27 
-100 Гц
-ax,ay,az,gx,gy,gz,mx,my,mz,delta_t
+ax,ay,az,gx,gy,gz,mx,my,mz,delta_t,brake
 
 2.2022-09-29 
 100 Гц

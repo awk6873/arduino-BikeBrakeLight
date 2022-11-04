@@ -1,5 +1,5 @@
 // Управление стоп-сигналом для велосипеда по значениям ускорения от акселерометра при торможении
-// Эмуляция MPU на массиве собранных данных от акселя, гиро и мага 
+// Эмуляция MPU на массиве собранных данных от акселя и гиро 
 // Плата - XIAO SAMD21
 // IMU - Invensense MPU9250
 
@@ -40,6 +40,7 @@ uint32_t accel_last_activity_ts;
 
 // текущие значения от акселя, гиро и мага
 int imu_ax = 0, imu_ay = 0, imu_az = 0;
+int imu_ax_c = 0, imu_ay_c = 0, imu_az_c = 0;
 int imu_gx = 0, imu_gy = 0, imu_gz = 0;
 int imu_mx = 0, imu_my = 0, imu_mz = 0;
 
@@ -76,7 +77,7 @@ uint32_t Now = 0; // used to calculate integration interval
 
 int brake;
 
-short int model_inputs[100][6]; 
+short int model_inputs[100][9]; 
 int model_window_size;
 int num_samples = 0;
 
@@ -107,15 +108,6 @@ void setup()
   #endif
 
   delay(10000);
-
-  // Call imu.begin() to verify communication and initialize
-  if (imu.begin() != INV_SUCCESS) {
-    #ifdef DEBUG
-    Serial.println("Unable to communicate with MPU-9250");
-    #endif
-    blinkLED(3, 500, 500);
-    while(1);
-  }
 
   // свойства модели
   model_window_size = neuton_model_window_size();
@@ -155,25 +147,10 @@ void loop()
     }
   }
   //Serial.println(String(row));
-  sscanf(row, "%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d", 
-              &imu_ax, &imu_ay, &imu_az, &imu_gx, &imu_gy, &imu_gz, &imu_mx, &imu_my, &imu_mz, 
-              &deltat_orig, &brake);
-  //delayMicroseconds(deltat_orig);
- 
-  // получаем значения от акселя
-  ax = imu.calcAccel(imu_ax);
-  ay = imu.calcAccel(imu_ay); 
-  az = imu.calcAccel(imu_az);
-
-  // получаем значения от гиро
-  gx = imu.calcGyro(imu_gx);
-  gy = imu.calcGyro(imu_gy); 
-  gz = imu.calcGyro(imu_gz);
-  
-  // получаем значения от мага
-  mx = imu.calcMag(imu_mx);
-  my = imu.calcMag(imu_my); 
-  mz = imu.calcMag(imu_mz);
+  sscanf(row, "%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d", 
+              &imu_ax, &imu_ay, &imu_az, &imu_ax_c, &imu_ay_c, &imu_az_c, &imu_gx, &imu_gy, &imu_gz, 
+              &brake);
+  delayMicroseconds(13000);
 
   // сдвигаем предыдущие значения
   for (int i = model_window_size - 1; i > 0; i--) {
@@ -183,14 +160,20 @@ void loop()
     model_inputs[i][3] = model_inputs[i - 1][3];
     model_inputs[i][4] = model_inputs[i - 1][4];
     model_inputs[i][5] = model_inputs[i - 1][5];
+	model_inputs[i][3] = model_inputs[i - 1][6];
+    model_inputs[i][4] = model_inputs[i - 1][7];
+    model_inputs[i][5] = model_inputs[i - 1][8];
   }
   // самые свежие - в элемент [0]
   model_inputs[0][0] = imu_ax; 
   model_inputs[0][1] = imu_ay;
   model_inputs[0][2] = imu_az;
-  model_inputs[0][3] = imu_gx; 
-  model_inputs[0][4] = imu_gy;
-  model_inputs[0][5] = imu_gz;
+  model_inputs[0][3] = imu_ax_c; 
+  model_inputs[0][4] = imu_ay_c;
+  model_inputs[0][5] = imu_az_c;
+  model_inputs[0][6] = imu_gx; 
+  model_inputs[0][7] = imu_gy;
+  model_inputs[0][8] = imu_gz;
   
   if (num_samples == model_window_size) {
     // отправляем сэмпл на вход модели
