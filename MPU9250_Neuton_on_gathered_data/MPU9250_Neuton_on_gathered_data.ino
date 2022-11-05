@@ -4,7 +4,7 @@
 // IMU - Invensense MPU9250
 
 #include <SparkFunMPU9250-DMP.h>
-#include "src/neuton/neuton.h"
+#include <neuton.h>
 #include <SD.h>
 #include <SPI.h>
 
@@ -77,8 +77,9 @@ uint32_t Now = 0; // used to calculate integration interval
 
 int brake;
 
-short int model_inputs[100][9]; 
+neuton_input_t model_inputs[100][9]; 
 int model_window_size;
+int model_inputs_num;
 int num_samples = 0;
 
 MPU9250_DMP imu;
@@ -109,10 +110,16 @@ void setup()
 
   delay(10000);
 
-  // свойства модели
-  model_window_size = neuton_model_window_size();
+  // инициализируем модель
+  neuton_nn_setup();
+  // кол-во сэмплов в окне данных
+  model_window_size = neuton_nn_input_window_size();
+  // кол-во переменных в сэмпле
+  model_inputs_num = neuton_nn_uniq_inputs_num();
   Serial.print("Model window size: ");
   Serial.println(model_window_size);
+  Serial.print("Model inputs num: ");
+  Serial.println(model_inputs_num);
 
   // будем читать данные из файла с SD карты
   Serial.println("Initializing SD card...");
@@ -127,13 +134,12 @@ void setup()
   }
   Serial.println("card initialized.");
 
-  f = SD.open("mpu_lbl.txt");
-  
+  f = SD.open("mpu_lbl.tsv"); 
+  Serial.println(f.available());
 }
 
 void loop() 
 {
-
   // если добрались до конца файла, стоп
   while(!f.available());
 
@@ -160,9 +166,9 @@ void loop()
     model_inputs[i][3] = model_inputs[i - 1][3];
     model_inputs[i][4] = model_inputs[i - 1][4];
     model_inputs[i][5] = model_inputs[i - 1][5];
-	model_inputs[i][3] = model_inputs[i - 1][6];
-    model_inputs[i][4] = model_inputs[i - 1][7];
-    model_inputs[i][5] = model_inputs[i - 1][8];
+	  model_inputs[i][6] = model_inputs[i - 1][6];
+    model_inputs[i][7] = model_inputs[i - 1][7];
+    model_inputs[i][8] = model_inputs[i - 1][8];
   }
   // самые свежие - в элемент [0]
   model_inputs[0][0] = imu_ax; 
@@ -174,18 +180,40 @@ void loop()
   model_inputs[0][6] = imu_gx; 
   model_inputs[0][7] = imu_gy;
   model_inputs[0][8] = imu_gz;
-  
-  if (num_samples == model_window_size) {
-    // отправляем сэмпл на вход модели
-    for (int i = model_window_size - 1; i >= 0; i--)
-      neuton_model_set_inputs(model_inputs[i]);
-  }
-  else
+
+  neuton_inference_input_t* p_input;
+
+  if (num_samples < model_window_size - 1)
+    // накапливаем нужное кол-во сэмплов
     num_samples++;
-    
+  else {
+    // отправляем окно данных на вход модели
+    for (int i = model_window_size - 1; i >= 0; i--) {
+      Serial.println(i);
+      p_input = neuton_nn_feed_inputs(model_inputs[i], model_inputs_num);
+      if (p_input != NULL)
+        //make inference
+        break;
+      Serial.println(i);
+    }
+
+    neuton_u16_t predicted_target;
+    const neuton_output_t* probabilities;
+    neuton_nn_run_inference(p_input, &predicted_target, &probabilities);
+
+    Serial.print(predicted_target);
+    Serial.print("\t");
+    Serial.print(probabilities[0]);
+    Serial.print("\t");
+    Serial.print(probabilities[1]);
+    Serial.print("\t");
+    Serial.print(brake);
+    Serial.print("\t");
+    Serial.println(deltat, 7);
+  } 
   uint16_t index;
   float* outputs;
-    
+  /*  
   if (neuton_model_run_inference(&index, &outputs) == 0) {
     //  code for handling prediction result
      Serial.print(outputs[0]);
@@ -196,6 +224,7 @@ void loop()
      Serial.print("\t");
      Serial.println(deltat, 7);
   }
+  */
 
   Now = micros();
   deltat = ((Now - lastUpdate) / 1000000.0f); // set integration time by time elapsed since last filter update
