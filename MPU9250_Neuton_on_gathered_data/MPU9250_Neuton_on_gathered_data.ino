@@ -152,11 +152,12 @@ void loop()
       break;
     }
   }
-  //Serial.println(String(row));
-  sscanf(row, "%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d", 
-              &imu_ax, &imu_ay, &imu_az, &imu_ax_c, &imu_ay_c, &imu_az_c, &imu_gx, &imu_gy, &imu_gz, 
+  Serial.println(String(row));
+  sscanf(row, "%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\%d", 
+              //&imu_ax, &imu_ay, &imu_az, &imu_ax_c, &imu_ay_c, &imu_az_c, &imu_gx, &imu_gy, &imu_gz, 
+              &imu_ax, &imu_ay, &imu_az, &imu_gx, &imu_gy, &imu_gz, &imu_mx, &imu_my, &imu_mz, &deltat_orig,
               &brake);
-  delayMicroseconds(13000);
+  //delayMicroseconds(10000);
 
   // сдвигаем предыдущие значения
   for (int i = model_window_size - 1; i > 0; i--) {
@@ -174,12 +175,12 @@ void loop()
   model_inputs[0][0] = imu_ax; 
   model_inputs[0][1] = imu_ay;
   model_inputs[0][2] = imu_az;
-  model_inputs[0][3] = imu_ax_c; 
-  model_inputs[0][4] = imu_ay_c;
-  model_inputs[0][5] = imu_az_c;
-  model_inputs[0][6] = imu_gx; 
-  model_inputs[0][7] = imu_gy;
-  model_inputs[0][8] = imu_gz;
+//  model_inputs[0][3] = imu_ax_c; 
+//  model_inputs[0][4] = imu_ay_c;
+//  model_inputs[0][5] = imu_az_c;
+  model_inputs[0][3] = imu_gx; 
+  model_inputs[0][4] = imu_gy;
+  model_inputs[0][5] = imu_gz;
 
   neuton_inference_input_t* p_input;
 
@@ -189,12 +190,12 @@ void loop()
   else {
     // отправляем окно данных на вход модели
     for (int i = model_window_size - 1; i >= 0; i--) {
-      Serial.println(i);
+      //Serial.println(i);
       p_input = neuton_nn_feed_inputs(model_inputs[i], model_inputs_num);
       if (p_input != NULL)
         //make inference
         break;
-      Serial.println(i);
+      //Serial.println(i);
     }
 
     neuton_u16_t predicted_target;
@@ -207,9 +208,9 @@ void loop()
     Serial.print("\t");
     Serial.print(probabilities[1]);
     Serial.print("\t");
-    Serial.print(brake);
-    Serial.print("\t");
-    Serial.println(deltat, 7);
+    Serial.println(brake);
+ //   Serial.print("\t");
+ //   Serial.println(deltat, 7);
   } 
   uint16_t index;
   float* outputs;
