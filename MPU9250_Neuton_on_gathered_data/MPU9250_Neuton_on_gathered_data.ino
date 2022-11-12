@@ -77,7 +77,7 @@ uint32_t Now = 0; // used to calculate integration interval
 
 int brake;
 
-neuton_input_t model_inputs[100][9]; 
+neuton_input_t model_inputs[100][9];
 int model_window_size;
 int model_inputs_num;
 int num_samples = 0;
@@ -152,12 +152,12 @@ void loop()
       break;
     }
   }
-  Serial.println(String(row));
+  //Serial.println(String(row));
   sscanf(row, "%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\%d", 
               //&imu_ax, &imu_ay, &imu_az, &imu_ax_c, &imu_ay_c, &imu_az_c, &imu_gx, &imu_gy, &imu_gz, 
               &imu_ax, &imu_ay, &imu_az, &imu_gx, &imu_gy, &imu_gz, &imu_mx, &imu_my, &imu_mz, &deltat_orig,
               &brake);
-  //delayMicroseconds(10000);
+  delayMicroseconds(10000);
 
   // сдвигаем предыдущие значения
   for (int i = model_window_size - 1; i > 0; i--) {
@@ -190,14 +190,16 @@ void loop()
   else {
     // отправляем окно данных на вход модели
     for (int i = model_window_size - 1; i >= 0; i--) {
-      //Serial.println(i);
-      p_input = neuton_nn_feed_inputs(model_inputs[i], model_inputs_num);
-      if (p_input != NULL)
-        //make inference
+      Serial.println(i);
+      p_input = neuton_nn_feed_inputs(&model_inputs[i][0], model_inputs_num);
+      if (p_input != NULL) {
+        // make inference
+        Serial.println("Feed inputs done");
         break;
-      //Serial.println(i);
+      }
     }
 
+    //Serial.println("Start inference");
     neuton_u16_t predicted_target;
     const neuton_output_t* probabilities;
     neuton_nn_run_inference(p_input, &predicted_target, &probabilities);
