@@ -1,4 +1,4 @@
-// Управление стоп-сигналом для велосипеда по значениям ускорения от акселерометра при торможении
+// Управление стоп-сигналом для велосипеда по значениям ускорения от акселерометра и гироскопа при торможении
 // Эмуляция MPU на массиве собранных данных от акселя и гиро 
 // Плата - XIAO SAMD21
 // IMU - Invensense MPU9250
@@ -40,7 +40,6 @@ uint32_t accel_last_activity_ts;
 
 // текущие значения от акселя, гиро и мага
 int imu_ax = 0, imu_ay = 0, imu_az = 0;
-int imu_ax_c = 0, imu_ay_c = 0, imu_az_c = 0;
 int imu_gx = 0, imu_gy = 0, imu_gz = 0;
 int imu_mx = 0, imu_my = 0, imu_mz = 0;
 
@@ -68,16 +67,16 @@ float mx_scale = 1.0;
 float my_scale = 1.5;
 float mz_scale = 0.80;
 
-//uint32_t delt_t = 0;                           // used to control display output rate
 uint32_t count = 0, sumCount = 0;                // used to control display output rate
 float deltat = 0.0f, sum = 0.0f;                 // integration interval for both filter schemes
 uint32_t deltat_orig;
+uint32_t deltat_us;
 uint32_t lastUpdate = 0;      // used to calculate integration interval
 uint32_t Now = 0; // used to calculate integration interval
 
 int brake;
 
-neuton_input_t model_inputs[100][9];
+neuton_input_t model_inputs[100][6];
 int model_window_size;
 int model_inputs_num;
 int num_samples = 0;
@@ -135,7 +134,6 @@ void setup()
   Serial.println("card initialized.");
 
   f = SD.open("mpu_lbl.tsv"); 
-  Serial.println(f.available());
 }
 
 void loop() 
@@ -153,11 +151,10 @@ void loop()
     }
   }
   //Serial.println(String(row));
-  sscanf(row, "%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\%d", 
-              //&imu_ax, &imu_ay, &imu_az, &imu_ax_c, &imu_ay_c, &imu_az_c, &imu_gx, &imu_gy, &imu_gz, 
+  sscanf(row, "%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\%d",  
               &imu_ax, &imu_ay, &imu_az, &imu_gx, &imu_gy, &imu_gz, &imu_mx, &imu_my, &imu_mz, &deltat_orig,
               &brake);
-  delayMicroseconds(10000);
+  //delayMicroseconds(10000);
 
   // сдвигаем предыдущие значения
   for (int i = model_window_size - 1; i > 0; i--) {
@@ -167,17 +164,11 @@ void loop()
     model_inputs[i][3] = model_inputs[i - 1][3];
     model_inputs[i][4] = model_inputs[i - 1][4];
     model_inputs[i][5] = model_inputs[i - 1][5];
-	  model_inputs[i][6] = model_inputs[i - 1][6];
-    model_inputs[i][7] = model_inputs[i - 1][7];
-    model_inputs[i][8] = model_inputs[i - 1][8];
   }
   // самые свежие - в элемент [0]
   model_inputs[0][0] = imu_ax; 
   model_inputs[0][1] = imu_ay;
   model_inputs[0][2] = imu_az;
-//  model_inputs[0][3] = imu_ax_c; 
-//  model_inputs[0][4] = imu_ay_c;
-//  model_inputs[0][5] = imu_az_c;
   model_inputs[0][3] = imu_gx; 
   model_inputs[0][4] = imu_gy;
   model_inputs[0][5] = imu_gz;
@@ -190,29 +181,33 @@ void loop()
   else {
     // отправляем окно данных на вход модели
     for (int i = model_window_size - 1; i >= 0; i--) {
-      Serial.println(i);
+      //Serial.println(i);
       p_input = neuton_nn_feed_inputs(&model_inputs[i][0], model_inputs_num);
       if (p_input != NULL) {
         // make inference
-        Serial.println("Feed inputs done");
+        //Serial.println("Feed inputs done");
         break;
       }
     }
 
-    //Serial.println("Start inference");
     neuton_u16_t predicted_target;
     const neuton_output_t* probabilities;
-    neuton_nn_run_inference(p_input, &predicted_target, &probabilities);
-
-    Serial.print(predicted_target);
-    Serial.print("\t");
-    Serial.print(probabilities[0]);
-    Serial.print("\t");
-    Serial.print(probabilities[1]);
-    Serial.print("\t");
-    Serial.println(brake);
- //   Serial.print("\t");
- //   Serial.println(deltat, 7);
+    //Serial.println("Start inference");
+    neuton_i16_t result = neuton_nn_run_inference(p_input, &predicted_target, &probabilities);
+    //Serial.println(result);
+    if (result >= 0) {
+      //Serial.print(predicted_target);
+      //Serial.print("\t");
+      //Serial.print(probabilities[0]);
+      //Serial.print("\t");
+      //Serial.print(probabilities[1]);
+      //Serial.print("\t");
+      //Serial.println(brake);
+      //Serial.print("\t");
+      Serial.println(deltat_us);
+    }
+    else
+      Serial.println("inference failed");
   } 
   uint16_t index;
   float* outputs;
@@ -230,6 +225,7 @@ void loop()
   */
 
   Now = micros();
+  deltat_us = Now - lastUpdate;
   deltat = ((Now - lastUpdate) / 1000000.0f); // set integration time by time elapsed since last filter update
   //deltat = deltat_orig / 1000000.0f; // set integration time by time elapsed since last filter update
   lastUpdate = Now;
@@ -252,19 +248,6 @@ void loop()
   //Serial.println((String)ax + "\t" + ay + "\t" + az);
   //Serial.println((String)ay + "\t" + ay_c + "\t" + ay_avg);
 
-/*
-  Serial.print("X: \t");
-  Serial.print(accel_filter_input[0], 10);
-  Serial.print("\t");
-  Serial.print("Y: \t");
-  Serial.print(accel_filter_output[0], 10);
-  Serial.print("\t");
-  Serial.print(accel_filter_output[1], 10);
-  Serial.print("\t");
-  Serial.print(accel_filter_output[2], 10);
-  Serial.print("\t");
-  Serial.println(accel_filter_output[3], 10);
-*/
   #endif
   
 /*  

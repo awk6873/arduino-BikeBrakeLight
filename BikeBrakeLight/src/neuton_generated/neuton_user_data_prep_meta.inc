@@ -1,4 +1,4 @@
-/* 2022-11-12T13:48:37Z */
+/* 2022-11-07T15:17:38Z */
 
 /* ----------------------------------------------------------------------
 Copyright (c) 2021-2022 Bell Integrator, Inc.
@@ -36,6 +36,11 @@ static const neuton_input_t INPUT_FEATURES_SCALE_MIN[] = { 0 };
  */
 static const neuton_input_t INPUT_FEATURES_SCALE_MAX[] = { 0 };
 
+/** Defines which unique features from the input data will be used/collected,
+ *  one bit for one unique feature, starting from LSB
+ */
+static const neuton_u8_t INPUT_FEATURES_USAGE_MASK[] = { 0x1f };
+
 /** Defines which unique input features is used for LAG features processing,
  *  one bit for one unique feature, starting from LSB
  */
@@ -45,22 +50,15 @@ static const neuton_u8_t INPUT_FEATURES_USED_FOR_LAGS_MASK[] = { 0x00 };
  *  32 bit for one unique feature, @ref neuton_dsp_features_mask_t to see bitmask
  */
 static const neuton_u32_t DSP_FEATURES_CALCULATION_MASK[] = {
-	720896, 524288, 272629760, 196608, 27394048, 83886080 };
-
-/** Defines DSP feature calculation arguments used by DSP pipeline,
- *  32 bit for one feature argument
- */
-static const neuton_input_t DSP_FEATURES_CALCULATION_ARGS[] = { 32 };
+	34078720, 8912896, 80216064, 16908288, 33685504 };
 
 /** Defines DSP features MAX scaling factor
  */
 static const neuton_feature_t DSP_FEATURES_SCALE_MIN[] = {
-	-29480, -2548, -3145, -3264, 7586, 8, -2195, -636, -269, -10152, 1, 20,
-	8, 0 };
+	-3145, 1, -3264, 30, 6812, 7586, 43, 0, -636, 25, -269, 1 };
 
 /** Defines DSP features MIN scaling factor
  */
 static const neuton_feature_t DSP_FEATURES_SCALE_MAX[] = {
-	1116, 32668, 1188, 1860, 219816, 5263, 468, 1904, 4133, 13755, 1234, 1267,
-	2936, 18 };
+	1188, 71, 1860, 3714, 9303, 219816, 9119, 16, 1904, 1193, 4133, 58 };
 

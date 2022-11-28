@@ -59,7 +59,7 @@ neuton_f32_t neuton_dsp_kur_f32_s(const neuton_f32_t* p_input, neuton_u16_t num,
  *                            <pre> p_ctx->value.sum and/or p_ctx->value.var </pre> for calculation if it exist,
  *                            the calculated value of variance will be written to context for further use
  *
- * @return  neuton_i16_t  Kurtosis value in integer format, not real value but with high correlation to floating-point kurtosis
+ * @return  neuton_i16_t  Kurtosis of the vector in integer format with high float correlation
  */
 neuton_i16_t neuton_dsp_kur_i8(const neuton_i8_t* p_input, neuton_u16_t num,
                                 neuton_dsp_stat_ctx_i8_t* p_ctx);
@@ -74,7 +74,7 @@ neuton_i16_t neuton_dsp_kur_i8(const neuton_i8_t* p_input, neuton_u16_t num,
  *                            <pre> p_ctx->value.sum and/or p_ctx->value.var </pre> for calculation if it exist,
  *                            the calculated value of variance will be written to context for further use
  *
- * @return  neuton_i32_t  Kurtosis value in integer format, not real value but with high correlation to floating-point kurtosis
+ * @return  neuton_i32_t  Kurtosis of the vector in integer format with high float correlation
  */
 neuton_i32_t neuton_dsp_kur_i16(const neuton_i16_t* p_input, neuton_u16_t num,
                                 neuton_dsp_stat_ctx_i16_t* p_ctx);

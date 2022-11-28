@@ -9,7 +9,8 @@ neuton_i8_t neuton_dsp_absmax_i8(const neuton_i8_t* p_input, neuton_u16_t num)
     neuton_i8_t new_val;
     neuton_u16_t loop_cnt;
 
-    neuton_i8_t max = 0;
+    neuton_i8_t max = abs(*p_input++);
+    num--;
 
 #if (NEUTON_USE_LOOPUNROLL == 1)
     neuton_i32_t* p_input_i32 = (neuton_i32_t*)p_input;
@@ -75,7 +76,7 @@ neuton_i8_t neuton_dsp_absmax_i8_s(const neuton_i8_t* p_input, neuton_u16_t num,
     neuton_i8_t new_val;
 
     neuton_u16_t i = 0U;
-    neuton_i8_t max = 0;
+    neuton_i8_t max = NEUTON_INT8_MIN;
 
 #if (NEUTON_USE_LOOPUNROLL == 1)
     /* Loop unrolling: Compute 4 outputs at a time */

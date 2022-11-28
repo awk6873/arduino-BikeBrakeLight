@@ -8,7 +8,7 @@
 #include <ArduinoLowPower.h>
 #include "quaternionFilters.h"
 #include "helper_3dmath.h"
-#include "src/neuton/neuton.h"
+#include "neuton.h"
 
 #define INTERRUPT_PIN 3   // pin для прерываний от MPU
 #define STOP_LED_PIN 2    // pin для управления ключом стоп-сигнала
@@ -53,7 +53,7 @@ uint32_t accel_last_activity_ts;
 #define ACCEL_WAKE_ON_FREQ 2    // 2 - 1.95 Гц, 4 - 3.91 Гц ?
 
 // размер окна для усреднения значения от датчика освещенности, кол-во сэмплов за 10 сек
-#define LIGHT_AVG_WINDOW_SIZE 10000 * IMU_SAMPLE_RATE
+#define LIGHT_AVG_WINDOW_SIZE 10 * IMU_SAMPLE_RATE
 
 // текущие значения от акселя, гиро и мага
 float ax = 0, ay = 0, az = 0;

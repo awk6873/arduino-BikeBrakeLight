@@ -3,7 +3,6 @@
 #include <neuton/dsp/pipeline/config/neuton_dsp_pipeline_config_resolver.h>
 #include <neuton/dsp/neuton_dsp_spectral.h>
 #include <neuton/dsp/neuton_dsp_transform.h>
-#include <neuton/neuton_platform.h>
 #include <string.h>
 
 // ///////////////////////////////////////////////////////////////////////////
@@ -78,10 +77,7 @@ neuton_u16_t neuton_dsp_pipeline_spectr_compute_i8(const neuton_i8_t* p_input, n
 #endif // NEUTON_DSP_PIPELINE_COMPUTE_SPECTR_PEAKS
 // ///////////////////////////////////////////////////////////////////////////
 
-    /** Prevent compilation warnings */
-    NEUTON_UNUSED(feature_mask);
-    NEUTON_UNUSED(get_argument);
-    NEUTON_UNUSED(fraction_bits);
+    (void)fraction_bits;
 
     return (neuton_u16_t)(p_features - p_features_begin);
 }

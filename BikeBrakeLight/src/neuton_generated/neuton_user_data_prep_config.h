@@ -1,4 +1,4 @@
-/* 2022-11-12T13:48:37Z */
+/* 2022-11-07T15:17:38Z */
 
 /* ----------------------------------------------------------------------
 Copyright (c) 2021-2022 Bell Integrator, Inc.
@@ -38,7 +38,7 @@ applicable.
 #define NEUTON_NN_INPUT_UNIQ_FEATURES_NUM 6
 
 /** Number of unique features actually used by NN from the original input sample */
-#define NEUTON_NN_INPUT_UNIQ_FEATURES_USED_NUM 6
+#define NEUTON_NN_INPUT_UNIQ_FEATURES_USED_NUM 5
 
 /** Number of input feature samples that should be collected in the input window
  *  feature_sample = 1 * NEUTON_NN_INPUT_UNIQ_FEATURES_NUM
@@ -55,7 +55,7 @@ applicable.
 #define NEUTON_NN_USE_UNIQ_INPUT_SCALING 0
 
 /** The maximum number of DSP features that user used for all unique input features */
-#define NEUTON_NN_DSP_FEATURES_NUM 14
+#define NEUTON_NN_DSP_FEATURES_NUM 78
 
 /** Determines the presence of a unique mask for DSP feature calculation for each unique input feature */
 #define NEUTON_NN_USE_UNIQ_DSP_MASK 1
@@ -65,21 +65,21 @@ applicable.
 
 
 /** Defines the statistical features to be used in the compiled image */
-#define NEUTON_DSP_PIPELINE_COMPUTE_MIN 1
+#define NEUTON_DSP_PIPELINE_COMPUTE_MIN 0
 #define NEUTON_DSP_PIPELINE_COMPUTE_MAX 1
-#define NEUTON_DSP_PIPELINE_COMPUTE_MIN_MAX 1
+#define NEUTON_DSP_PIPELINE_COMPUTE_MIN_MAX 0
 #define NEUTON_DSP_PIPELINE_COMPUTE_RANGE 0
 #define NEUTON_DSP_PIPELINE_COMPUTE_MEAN 1
 #define NEUTON_DSP_PIPELINE_COMPUTE_RMS 1
 #define NEUTON_DSP_PIPELINE_COMPUTE_STD 1
 #define NEUTON_DSP_PIPELINE_COMPUTE_ZCR 1
-#define NEUTON_DSP_PIPELINE_COMPUTE_MCR 0
+#define NEUTON_DSP_PIPELINE_COMPUTE_MCR 1
 #define NEUTON_DSP_PIPELINE_COMPUTE_TCR 0
 #define NEUTON_DSP_PIPELINE_COMPUTE_MAD 0
-#define NEUTON_DSP_PIPELINE_COMPUTE_SKEW 1
+#define NEUTON_DSP_PIPELINE_COMPUTE_SKEW 0
 #define NEUTON_DSP_PIPELINE_COMPUTE_KUR 1
-#define NEUTON_DSP_PIPELINE_COMPUTE_MOMENTS 1
-#define NEUTON_DSP_PIPELINE_COMPUTE_P2P_LF 1
+#define NEUTON_DSP_PIPELINE_COMPUTE_MOMENTS 0
+#define NEUTON_DSP_PIPELINE_COMPUTE_P2P_LF 0
 #define NEUTON_DSP_PIPELINE_COMPUTE_P2P_HF 0
 #define NEUTON_DSP_PIPELINE_COMPUTE_P2P_LF_HF 0
 

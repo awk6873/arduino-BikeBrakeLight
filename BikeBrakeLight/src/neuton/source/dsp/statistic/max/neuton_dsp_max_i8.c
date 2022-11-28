@@ -8,7 +8,8 @@ neuton_i8_t neuton_dsp_max_i8(const neuton_i8_t* p_input, neuton_u16_t num)
     neuton_i8_t new_val;
     neuton_u16_t loop_cnt;
 
-    neuton_i8_t max = NEUTON_INT8_MIN;
+    neuton_i8_t max = *p_input++;
+    num--;
 
 #if (NEUTON_USE_LOOPUNROLL == 1)
     neuton_i32_t* p_input_i32 = (neuton_i32_t*)p_input;

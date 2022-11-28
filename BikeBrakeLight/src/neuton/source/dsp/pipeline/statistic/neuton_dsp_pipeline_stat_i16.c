@@ -2,7 +2,6 @@
 #include <neuton/dsp/pipeline/config/neuton_dsp_pipeline_config_i16.h>
 #include <neuton/dsp/pipeline/config/neuton_dsp_pipeline_config_resolver.h>
 #include <neuton/dsp/neuton_dsp_statistic.h>
-#include <neuton/neuton_platform.h>
 
 #include <string.h>
 // ///////////////////////////////////////////////////////////////////////////
@@ -263,10 +262,7 @@ neuton_u8_t neuton_dsp_pipeline_stat_compute_i16(const neuton_i16_t* p_input, ne
 #endif // #if (NEUTON_DSP_PIPELINE_COMPUTE_P2P_LF_HF)
 // ///////////////////////////////////////////////////////////////////////////
 
-    /** Prevent compilation warnings */
-    NEUTON_UNUSED(feature_mask);
-    NEUTON_UNUSED(get_argument);
-    NEUTON_UNUSED(p_ctx);
+    (void)p_ctx;
 
     return (neuton_u8_t)(p_features - p_features_begin);
 }

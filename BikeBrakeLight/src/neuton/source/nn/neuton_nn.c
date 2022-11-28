@@ -74,7 +74,7 @@ neuton_inference_input_t* neuton_nn_feed_inputs(const neuton_input_t* p_input,
                                                                 samples_num, p_input_usage_mask_);
     if (samples_left > 0) { return NULL; }
 
-    input_ctx_.p_input_window = (neuton_input_t*)window_ctx_.p_window.generic;
+    input_ctx_.p_input_window = window_ctx_.p_window.generic;
     input_ctx_.samples_num    = window_ctx_.max_samples_num;
     input_ctx_.p_window_ctx   = &window_ctx_;
 
@@ -84,7 +84,7 @@ neuton_inference_input_t* neuton_nn_feed_inputs(const neuton_input_t* p_input,
 
     if (samples_left > 0) { return NULL; }
 
-    input_ctx_.p_input_window = (neuton_input_t*)window_ctx_.p_window.generic;
+    input_ctx_.p_input_window = window_ctx_.p_window.generic;
     input_ctx_.samples_num    = window_ctx_.max_samples_num;
     input_ctx_.p_window_ctx   = &window_ctx_;
 

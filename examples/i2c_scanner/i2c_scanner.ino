@@ -30,12 +30,20 @@
 #include <Wire.h>
 
 
+
+
 void setup()
 {
   Wire.begin();
 
+  pinMode(PIN_LSM6DS3TR_C_POWER, OUTPUT);
+  digitalWrite(PIN_LSM6DS3TR_C_POWER, HIGH);
+
   Serial.begin(9600);
   while (!Serial);             // Leonardo: wait for serial monitor
+
+  Serial.println(PIN_LSM6DS3TR_C_POWER);
+  
   Serial.println("\nI2C Scanner");
 }
 

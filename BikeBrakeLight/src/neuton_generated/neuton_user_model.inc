@@ -1,4 +1,4 @@
-/* 2022-11-12T13:48:37Z */
+/* 2022-11-07T15:17:38Z */
 
 /* ----------------------------------------------------------------------
 Copyright (c) 2021-2022 Bell Integrator, Inc.
@@ -30,22 +30,22 @@ applicable.
 
 
 static const neuton_weight_t MODEL_WEIGHTS[] = {
-	-30941, 26569, 18959, 18901, 2702, -909, 32764, -632, -6054, 7925, 7011,
-	-1421, -12204, 0, -26634, -32254, 2275, 20602, 5034, -19947, -32755, -18165,
-	20019, -7852, 32220, 26471, 24714, -29459, 29463, 0 };
+	-32768, 29959, 16313, 19052, 16174, -2998, 28839, -13866, 23345, 32764,
+	4697, -9474, -31987, 3454, -32701, 7982, -32699, 32421, -6432, 1043, 32764,
+	-13771, 4184 };
 
 static const neuton_sources_num_t MODEL_LINKS[] = {
-	2, 3, 4, 7, 13, 14, 0, 1, 2, 10, 12, 14, 1, 14, 0, 1, 0, 2, 5, 14, 2, 6,
-	8, 9, 11, 14, 0, 3, 4, 14 };
+	0, 2, 5, 8, 10, 12, 0, 0, 4, 7, 11, 12, 1, 12, 1, 1, 3, 6, 9, 12, 0, 3,
+	12 };
 
 static const neuton_weights_num_t MODEL_INTERNAL_LINKS_BOUNDARIES[] = {
-	0, 7, 13, 16, 20, 29 };
+	0, 7, 13, 15, 22 };
 
 static const neuton_weights_num_t MODEL_EXTERNAL_LINKS_BOUNDARIES[] = {
-	6, 12, 14, 20, 26, 30 };
+	6, 12, 14, 20, 23 };
 
 static const neuton_coeff_t MODEL_ACTIVATION_COEFFS[] = {
-	40629, 40957, 40960, 40926, 40959, 40960 };
+	40925, 33361, 17647, 38745, 19582 };
 
-static const neuton_neurons_num_t MODEL_OUTPUT_NEURONS[] = { 5, 2 };
+static const neuton_neurons_num_t MODEL_OUTPUT_NEURONS[] = { 4, 2 };
 
