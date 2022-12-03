@@ -198,13 +198,15 @@ void loop()
     if (result >= 0) {
       //Serial.print(predicted_target);
       //Serial.print("\t");
-      //Serial.print(probabilities[0]);
+      Serial.print(probabilities[0]);
+      Serial.print("\t");
+      Serial.print(probabilities[1]);
+      Serial.print("\t");
+      Serial.println(brake);
       //Serial.print("\t");
-      //Serial.print(probabilities[1]);
+      //Serial.println(sumCount);
       //Serial.print("\t");
-      //Serial.println(brake);
-      //Serial.print("\t");
-      Serial.println(deltat_us);
+      //Serial.println(deltat_us);
     }
     else
       Serial.println("inference failed");
