@@ -8,7 +8,10 @@
 #include <SD.h>
 #include <SPI.h>
 
-const int chipSelectPin = 3;
+#ifndef SDCARD_SS_PIN
+#define SDCARD_SS_PIN 3
+#endif
+const int chipSelectPin = SDCARD_SS_PIN;
 
 #define STOP_LED_PIN 2    // pin для управления ключом стоп-сигнала
 

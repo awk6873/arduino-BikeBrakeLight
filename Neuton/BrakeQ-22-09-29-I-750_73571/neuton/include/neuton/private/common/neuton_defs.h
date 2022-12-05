@@ -3,7 +3,7 @@
 
 #include <neuton/neuton_platform.h>
 
-#define NEUTON_USE_LOOPUNROLL           (1)
+#define NEUTON_USE_LOOPUNROLL           (0)
 #define NEUTON_USE_MATH_ROUNDING        (0)
 
 #define NEUTON_INT_TO_F32_PRECISION_FACTOR  (100)
