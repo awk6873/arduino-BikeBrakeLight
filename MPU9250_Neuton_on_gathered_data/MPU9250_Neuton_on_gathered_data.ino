@@ -43,6 +43,7 @@ uint32_t accel_last_activity_ts;
 
 // текущие значения от акселя, гиро и мага
 int imu_ax = 0, imu_ay = 0, imu_az = 0;
+int imu_ax_c = 0, imu_ay_c = 0, imu_az_c = 0;
 int imu_gx = 0, imu_gy = 0, imu_gz = 0;
 int imu_mx = 0, imu_my = 0, imu_mz = 0;
 
@@ -79,7 +80,7 @@ uint32_t Now = 0; // used to calculate integration interval
 
 int brake;
 
-neuton_input_t model_inputs[100][6];
+neuton_input_t model_inputs[100][9];
 int model_window_size;
 int model_inputs_num;
 int num_samples = 0;
@@ -154,27 +155,27 @@ void loop()
     }
   }
   //Serial.println(String(row));
-  sscanf(row, "%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\%d",  
-              &imu_ax, &imu_ay, &imu_az, &imu_gx, &imu_gy, &imu_gz, &imu_mx, &imu_my, &imu_mz, &deltat_orig,
+  sscanf(row, "%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d",  
+              &imu_ax, &imu_ay, &imu_az, &imu_ax_c, &imu_ay_c, &imu_az_c, &imu_gx, &imu_gy, &imu_gz,
               &brake);
   //delayMicroseconds(10000);
 
   // сдвигаем предыдущие значения
   for (int i = model_window_size - 1; i > 0; i--) {
-    model_inputs[i][0] = model_inputs[i - 1][0];
-    model_inputs[i][1] = model_inputs[i - 1][1];
-    model_inputs[i][2] = model_inputs[i - 1][2];
-    model_inputs[i][3] = model_inputs[i - 1][3];
-    model_inputs[i][4] = model_inputs[i - 1][4];
-    model_inputs[i][5] = model_inputs[i - 1][5];
+    for (int j = 0; j < model_inputs_num; j++) {
+      model_inputs[i][j] = model_inputs[i - 1][j];
+    }
   }
   // самые свежие - в элемент [0]
   model_inputs[0][0] = imu_ax; 
   model_inputs[0][1] = imu_ay;
   model_inputs[0][2] = imu_az;
-  model_inputs[0][3] = imu_gx; 
-  model_inputs[0][4] = imu_gy;
-  model_inputs[0][5] = imu_gz;
+  model_inputs[0][3] = imu_ax_c; 
+  model_inputs[0][4] = imu_ay_c;
+  model_inputs[0][5] = imu_az_c;
+  model_inputs[0][6] = imu_gx; 
+  model_inputs[0][7] = imu_gy;
+  model_inputs[0][8] = imu_gz;
 
   neuton_inference_input_t* p_input;
 
@@ -201,8 +202,8 @@ void loop()
     if (result >= 0) {
       //Serial.print(predicted_target);
       //Serial.print("\t");
-      Serial.print(probabilities[0]);
-      Serial.print("\t");
+      //Serial.print(probabilities[0]);
+      //Serial.print("\t");
       Serial.print(probabilities[1]);
       Serial.print("\t");
       Serial.println(brake);
