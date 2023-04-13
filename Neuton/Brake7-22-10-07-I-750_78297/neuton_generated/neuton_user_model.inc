@@ -1,0 +1,93 @@
+/* 2023-03-24T06:58:42Z */
+
+/* ----------------------------------------------------------------------
+Copyright (c) 2022-2023 Neuton.AI, Inc.
+*
+The source code and its binary form are being made available on the following terms:
+Redistribution, use, and modification are permitted provided that the following
+conditions are met:
+*
+1. Redistributions of source code and/or its binary form must retain the above copyright notice,
+* this list of conditions (and the disclaimer) either in the body of the source code or in
+* the documentation and/or other materials provided with the distribution of the binary form, as
+applicable.
+*
+2. The name of the copyright holder may not be used to endorse or promote products derived from this
+* source code or its binary form without specific prior written permission of Neuton.AI, Inc.
+*
+3. Disclaimer. THIS SOURCE CODE AND ITS BINARY FORM ARE PROVIDED BY THE COPYRIGHT HOLDER "AS IS".
+* THE COPYRIGHT HOLDER HEREBY DISCLAIMS ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,
+* BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+* PARTICULAR PURPOSE. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE HELD LIABLE
+* FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF USE, DATA, OR PROFITS; INFRINGEMENT OF INTELLECTUAL PROPERTY RIGHTS
+* OF THIRD PARTIES; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+* WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+* IN ANY WAY OUT OF THE USE OF THIS SOURCE CODE OR ITS BINARY FORM, EVEN IF ADVISED OF THE
+* POSSIBILITY OF SUCH DAMAGE.
+---------------------------------------------------------------------- */
+
+
+static const neuton_weight_t MODEL_WEIGHTS[] = {
+	-32761, 29322, 29036, -5422, -8238, -156, 30666, -12769, 32507, -28672,
+	-10644, 6723, -28302, -31491, 25337, 7974, 32755, 1782, 19490, -25290,
+	23704, 28826, -32762, -32742, -970, 32765, -28673, -32768, -32768, -32768,
+	16380, 12144, -4629, -13550, -2902, 32765, -12297, -7119, -10440, 16136,
+	-6642, 32218, -22725, -2481, -12557, 32765, 32765, -16388, 24930, -8194,
+	-19464, -32544, -32768, -31490, -21675, 32767, 30734, 22164, 32767, -26182,
+	-27378, 15461, -20808, -283, -23012, -32768, -24443, -9484, 15779, -25886,
+	771, -32768, -32738, -32768, -4112, 27979, -7, -3165, -8506, -21886, -19913,
+	32637, 572, -32663, 32683, -32695, -26102, -11764, -32695, -696, -9662,
+	16061, -32670, -28100, 13280, -4104, 894, -32768, 28669, -20048, 32765,
+	-3, 2475, 32765, -20483, -8164, -6646, -3, 4782, -31228, 4953, -22038,
+	-6544, -32695, -12, -20880, -32768, -27691, 8928, -23154, 10244, 15231,
+	17491, -24573, -15567, -32104, 18495, -32762, 498, -2130, 17231, -19622,
+	-11300, -32765, 31565, -16392, -27785, 32764, 29303, 31265, -19655, -6462,
+	-13576, -30757, -12999, 324, 4130, -26, -1014, -32739, -32766, 32766, -28355,
+	8783, -69, -32243, -29189, 7166, -4306, 32679, -415, 16381, -32768, 16381,
+	16381, -16385, -2, -26917, -32768, 16151, 12149, 32210, -23781, -32768,
+	-23271, -13540, 7702, 32767, -6, 24058, 8317, -11877, 26085, 32766, 32765,
+	-32768, 32764, 32765, 32765, -25652, 18326, 32761, -31794, 32765, -26811,
+	24372, -5505, -32768, -25416, 16511, 16379, -25119, 12929, -10905, -15332,
+	17171, -9859, -1645, 32656, 32513, 4945, -10285, 32762, -2099, 28173, 32763,
+	20919, -11529, -7595, 29933, 31658, 11022, 32750, 15530, 8179, -12941,
+	-32768, 32765, 18498, -20310, -22951, -5, 18090, 14141, 32038, -32767,
+	21991, -2589, -18324, 29492, -16030, 32733, -30357, 32422, 16593, -32768,
+	-24286, -11356, 17264, -8501, 12595, -32768, -9677, -10408, -27527, 9346,
+	13819 };
+
+static const neuton_sources_num_t MODEL_LINKS[] = {
+	1, 4, 12, 27, 39, 83, 0, 19, 50, 66, 81, 83, 4, 52, 61, 80, 82, 83, 2,
+	9, 11, 38, 63, 68, 83, 12, 16, 19, 37, 76, 83, 4, 4, 15, 28, 45, 62, 83,
+	1, 3, 3, 8, 33, 83, 1, 6, 12, 44, 82, 83, 2, 30, 41, 47, 48, 61, 83, 3,
+	21, 35, 37, 69, 77, 83, 8, 5, 10, 62, 70, 79, 83, 1, 2, 20, 43, 65, 83,
+	3, 42, 64, 67, 82, 83, 0, 26, 31, 32, 52, 72, 83, 3, 5, 9, 12, 64, 83,
+	1, 8, 31, 48, 54, 83, 14, 21, 53, 59, 71, 83, 7, 15, 17, 21, 36, 49, 83,
+	22, 23, 51, 52, 55, 68, 83, 0, 1, 7, 12, 24, 29, 83, 7, 46, 62, 69, 74,
+	78, 83, 34, 40, 68, 73, 78, 83, 17, 13, 43, 47, 80, 83, 4, 16, 10, 28,
+	61, 73, 83, 19, 2, 62, 76, 82, 83, 3, 5, 48, 55, 75, 83, 1, 11, 51, 56,
+	58, 83, 20, 36, 44, 52, 61, 83, 0, 2, 4, 6, 8, 9, 10, 11, 12, 13, 14, 15,
+	16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 83, 0, 1, 2, 3, 10, 19,
+	66, 83, 9, 10, 11, 12, 25, 6, 83, 8, 13, 15, 20, 24, 57, 83, 4, 16, 18,
+	53, 60, 83, 6, 18, 12, 23, 33, 68, 83, 17, 19, 23, 31, 25, 51, 83, 1, 3,
+	5, 7, 29, 30, 31, 32, 33, 34, 83 };
+
+static const neuton_weights_num_t MODEL_INTERNAL_LINKS_BOUNDARIES[] = {
+	0, 7, 12, 19, 25, 32, 40, 46, 50, 57, 65, 73, 78, 83, 93, 97, 102, 108,
+	115, 126, 130, 136, 143, 150, 156, 161, 169, 173, 203, 210, 217, 223, 228,
+	234, 243, 256 };
+
+static const neuton_weights_num_t MODEL_EXTERNAL_LINKS_BOUNDARIES[] = {
+	6, 12, 18, 25, 31, 38, 44, 50, 57, 64, 71, 77, 83, 90, 96, 102, 108, 115,
+	122, 129, 136, 142, 148, 155, 161, 167, 173, 179, 204, 212, 219, 226, 232,
+	239, 246, 257 };
+
+static const neuton_coeff_t MODEL_ACTIVATION_COEFFS[] = {
+	40932, 17975, 40880, 40495, 30717, 26950, 30712, 28189, 40957, 40960, 36930,
+	40958, 40930, 40957, 17940, 40940, 40955, 35185, 39678, 35410, 40946, 30717,
+	35849, 40958, 40958, 40953, 40959, 40953, 40960, 38381, 21804, 38369, 35814,
+	40957, 40927, 40932 };
+
+static const neuton_neurons_num_t MODEL_OUTPUT_NEURONS[] = { 28, 35 };
+
