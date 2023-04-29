@@ -206,11 +206,12 @@ void loop()
       //Serial.print("\t");
       Serial.print(probabilities[1]);
       Serial.print("\t");
-      Serial.println(brake);
+      Serial.print(brake);
       //Serial.print("\t");
       //Serial.println(sumCount);
-      //Serial.print("\t");
-      //Serial.println(deltat_us);
+      Serial.print("\t");
+      Serial.print(deltat_us);
+      Serial.println();
     }
     else
       Serial.println("inference failed");
@@ -247,7 +248,7 @@ void loop()
   //Serial.println((String)imu_ax + "\t" + imu_ay + "\t" + imu_az + "\t");
   //Serial.print((String)imu_gx + "\t" + imu_gy + "\t" + imu_gz + "\t");
   //Serial.print((String)imu_mx + "\t" + imu_my + "\t" + imu_mz + "\t");
-  //Serial.println((String)deltat_orig + "\t" + deltat);
+  //Serial.println((String)deltat);
   //Serial.println((String)qn_str[0] + "\t" + qn_str[1] + "\t" + qn_str[2] + "\t" + qn_str[3]);
   //Serial.print((String)qn[0] + "\t" + qn[1] + "\t" + qn[2] + "\t" + qn[3] + "\t");
 
