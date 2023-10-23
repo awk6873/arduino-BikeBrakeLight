@@ -1,15 +1,15 @@
-#define IMU_SAMPLE_RATE 75
-
 // pin'ы для датчика освещенности
 #define LIGHT_SENS_OUT_PIN A0
 #define LIGHT_SENS_VDD_PIN 1
 // коэфф.масштабирования для целочисленных вычислений
-#define LIGHT_SENS_SCALE 100
+#define LIGHT_SENS_SCALE 100L
 // кол-во замеров освещенности для усреднения за 5 сек
 #define LIGHT_SENS_AVG_CNT (IMU_SAMPLE_RATE * 5)
 // пороговые значения для включения и отключения габаритных огней
-#define RUNNING_LIGHT_THREASHOLD_ON 75000L
-#define RUNNING_LIGHT_THREASHOLD_OFF 20000L
+#define RUNNING_LIGHT_THREASHOLD_ON 750 * LIGHT_SENS_SCALE
+#define RUNNING_LIGHT_THREASHOLD_OFF 200 * LIGHT_SENS_SCALE
+// уровень ШИМ габаритных огней
+#define RUNNING_LIGHT_PWM 10
 
 // pin для управления ключом стоп-сигнала
 #define STOP_LED_PIN 2    // pin для управления ключом стоп-сигнала
@@ -54,7 +54,7 @@ void loop() {
 
   if (light_sens_val_avg > RUNNING_LIGHT_THREASHOLD_ON) {
     // освещенность низкая, включаем габариты
-    analogWrite(STOP_LED_PIN, 10);
+    analogWrite(STOP_LED_PIN, RUNNING_LIGHT_PWM);
     Serial.print(1);
   }
   if (light_sens_val_avg < RUNNING_LIGHT_THREASHOLD_OFF) {
