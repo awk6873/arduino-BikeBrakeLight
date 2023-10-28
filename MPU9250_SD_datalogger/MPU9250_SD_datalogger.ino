@@ -1,5 +1,5 @@
 // Сохранение сырых данных от акселя, гиро и мага на SD карту
-// Плата - XIAO SAMD21
+// Плата - MKR ZERO
 // IMU - Invensense MPU9250
 
 #include <SparkFunMPU9250-DMP.h>
@@ -8,7 +8,9 @@
 #include <SD.h>
 #include <SPI.h>
 
-const int chipSelectPin = 3;
+const int chipSelectPin = SDCARD_SS_PIN;
+const int brakeButton = 0;
+const int brakeButtonVSS = 1;
 
 #define DEBUG 1  // использовать Serial для вывода сообщений
 
@@ -73,9 +75,9 @@ void setup()
   #endif
 
   // кнопка для регистрации торможения
-  pinMode(0, INPUT_PULLUP);
-  pinMode(1, OUTPUT);
-  digitalWrite(1, LOW);
+  pinMode(brakeButton, INPUT_PULLUP);
+  pinMode(brakeButtonVSS, OUTPUT);
+  digitalWrite(brakeButtonVSS, LOW);
 
   Serial.print("Initializing SD card...");
 
@@ -171,7 +173,7 @@ void loop()
   lastUpdate = Now;
   sum += deltat; // sum for averaging filter update rate
 
-  int brake_state = digitalRead(0)?0:1;
+  int brake_state = digitalRead(brakeButton)?0:1;
   if (brake_state == 1)
     // тормоз нажат
     digitalWrite(LED_BUILTIN, LOW);
@@ -181,7 +183,7 @@ void loop()
   sprintf(rows[sumCount++ % 300], "%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d",
           (int)(ax * ACCEL_INT_MULTIPLIER),   (int)(ay * ACCEL_INT_MULTIPLIER),   (int)(az * ACCEL_INT_MULTIPLIER), 
           (int)(ax_c * ACCEL_INT_MULTIPLIER), (int)(ay_c * ACCEL_INT_MULTIPLIER), (int)(az_c * ACCEL_INT_MULTIPLIER),
-          (int)(gx * GYRO_INT_MULTIPLIER),   (int)(gy * GYRO_INT_MULTIPLIER),   (int)(gz * GYRO_INT_MULTIPLIER), 
+          (int)(gx * GYRO_INT_MULTIPLIER),    (int)(gy * GYRO_INT_MULTIPLIER),    (int)(gz * GYRO_INT_MULTIPLIER), 
           brake_state);
 
   if (sumCount % 300 == 0) {
